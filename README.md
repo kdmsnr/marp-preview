@@ -16,7 +16,7 @@
 
 ### 1. インストール
 
-リポジトリをクローンし、依存関係をインストールします。
+リポジリをクローンし、依存関係をインストールします。
 
 ```bash
 git clone https://github.com/kdmsnr/marp-preview.git
@@ -35,6 +35,32 @@ npm start
 ### 3. ファイルを開く
 
 アプリケーションが起動したら、メニューの `File > Open File` またはショートカットキー `CmdOrCtrl+O` を使って、プレビューしたいMarkdownファイルを選択してください。
+
+## 📦 ビルド
+
+このアプリケーションは[Electron Builder](https://www.electron.build/)を使用して、各プラットフォーム向けの実行ファイルを生成できます。
+
+### ビルドコマンド
+
+以下のコマンドで、それぞれのプラットフォーム向けのアプリケーションをビルドできます。ビルドされたファイルは`dist`ディレクトリに出力されます。
+
+- **現在のOS向けにビルド**
+  現在作業しているOS（macOSまたはWindows）向けのアプリケーションをビルドします。
+  ```bash
+  npm run dist
+  ```
+
+- **macOS向けにビルド**
+  macOS向けのアプリケーション（`.app`と`.dmg`インストーラー）をビルドします。
+  ```bash
+  npm run dist:mac
+  ```
+
+- **Windows向けにビルド**
+  Windows向けのインストーラー（`.exe`）をビルドします。macOSやLinux環境でもクロスコンパイルが可能です。
+  ```bash
+  npm run dist:win
+  ```
 
 ## 📝 ライセンス
 
