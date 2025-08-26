@@ -20,7 +20,7 @@
     "email": "kdmsnr@gmail.com",
     "url": "https://kdmsnr.com"
   },
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "@marp-team/marp-core": "^4.1.0",
