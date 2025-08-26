@@ -49,7 +49,6 @@ function renderAndSend(filePath) {
 }
 
 function openFile() {
-  // mainWindow が存在しない、または破棄されている場合は新しいウィンドウを作成
   if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
   }
@@ -80,19 +79,16 @@ function startWatching(filePath) {
   });
 }
 
-// ここから追加・変更
 function marpJsPath() {
-  // @marp-team/marp-cli の bin を解決
   const pkgPath = require.resolve('@marp-team/marp-cli/package.json');
   const pkg = require(pkgPath);
-  return path.join(path.dirname(pkgPath), pkg.bin.marp); // 例: bin/marp.js
+  return path.join(path.dirname(pkgPath), pkg.bin.marp);
 }
 
 function runMarpCLI(input, output) {
   return new Promise((resolve, reject) => {
     const cli = marpJsPath();
 
-    // Electron を Node モードで実行して CLI を動かす
     const child = spawn(process.execPath, [cli, input, '-o', output], {
       cwd: path.dirname(input),
       env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
@@ -133,7 +129,6 @@ async function exportFile(format) {
 
   try {
     await runMarpCLI(currentFilePath, filePath);
-    // 生成確認（同期 I/O で確実化）
     fs.accessSync(filePath, fs.constants.R_OK);
     dialog.showMessageBox(mainWindow, {
       type: 'info',
