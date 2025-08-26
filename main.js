@@ -3,9 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { Marp } = require('@marp-team/marp-core');
+const { spawn } = require('child_process');
 
 let mainWindow;
 let watcher;
+let currentFilePath = null;
 
 const marp = new Marp({ inlineSVG: true });
 
@@ -40,7 +42,8 @@ function renderAndSend(filePath) {
     } else {
       console.warn('Attempted to render to a non-existent or destroyed window.');
     }
-  } catch (error) {
+  }
+  catch (error) {
     dialog.showErrorBox('Render Error', `Failed to render file: ${error.message}`);
   }
 }
@@ -57,6 +60,7 @@ function openFile() {
   }).then(result => {
     if (!result.canceled && result.filePaths.length > 0) {
       const filePath = result.filePaths[0];
+      currentFilePath = filePath;
       renderAndSend(filePath);
       startWatching(filePath);
     }
@@ -76,6 +80,72 @@ function startWatching(filePath) {
   });
 }
 
+// ここから追加・変更
+function marpJsPath() {
+  // @marp-team/marp-cli の bin を解決
+  const pkgPath = require.resolve('@marp-team/marp-cli/package.json');
+  const pkg = require(pkgPath);
+  return path.join(path.dirname(pkgPath), pkg.bin.marp); // 例: bin/marp.js
+}
+
+function runMarpCLI(input, output) {
+  return new Promise((resolve, reject) => {
+    const cli = marpJsPath();
+
+    // Electron を Node モードで実行して CLI を動かす
+    const child = spawn(process.execPath, [cli, input, '-o', output], {
+      cwd: path.dirname(input),
+      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+      stdio: ['ignore', 'ignore', 'ignore'],
+      windowsHide: true,
+    });
+
+    const t = setTimeout(() => {
+      child.kill();
+      reject(new Error('Marp CLI timed out'));
+    }, 60000);
+
+    child.on('error', (err) => {
+      clearTimeout(t);
+      reject(err);
+    });
+
+    child.on('close', (code) => {
+      clearTimeout(t);
+      if (code === 0) resolve();
+      else reject(new Error(`Marp CLI exited with code ${code}`));
+    });
+  });
+}
+
+async function exportFile(format) {
+  if (!currentFilePath) {
+    dialog.showErrorBox('Export Error', 'No file is currently open to export.');
+    return;
+  }
+
+  const defaultFileName = `${path.basename(currentFilePath, path.extname(currentFilePath))}.${format}`;
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: defaultFileName,
+    filters: [{ name: format.toUpperCase(), extensions: [format] }],
+  });
+  if (canceled || !filePath) return;
+
+  try {
+    await runMarpCLI(currentFilePath, filePath);
+    // 生成確認（同期 I/O で確実化）
+    fs.accessSync(filePath, fs.constants.R_OK);
+    dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      title: 'Export Successful',
+      message: `File exported to:\n${filePath}`,
+    });
+  }
+  catch (e) {
+    dialog.showErrorBox('Export Failed', e.message);
+  }
+}
+
 const menuTemplate = [
   {
     label: 'File',
@@ -86,6 +156,23 @@ const menuTemplate = [
         click() {
           openFile();
         },
+      },
+      {
+        label: 'Export',
+        submenu: [
+          {
+            label: 'Export as PDF',
+            click() {
+              exportFile('pdf');
+            },
+          },
+          {
+            label: 'Export as PPTX',
+            click() {
+              exportFile('pptx');
+            },
+          },
+        ],
       },
       {
         role: 'quit'

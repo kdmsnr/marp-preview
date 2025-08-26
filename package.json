@@ -28,6 +28,7 @@
     "chokidar": "^4.0.3"
   },
   "devDependencies": {
+    "@marp-team/marp-cli": "^4.2.3",
     "electron": "^37.3.1",
     "electron-builder": "^26.0.12"
   },
@@ -39,6 +40,10 @@
     },
     "win": {
       "target": "nsis"
-    }
+    },
+    "asarUnpack": [
+      "node_modules/@marp-team/marp-cli/**",
+      "node_modules/puppeteer/**"
+    ]
   }
 }
