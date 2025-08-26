@@ -177,6 +177,17 @@ const menuTemplate = [
   {
     label: 'View',
     submenu: [
+      {
+        label: 'Always On Top',
+        type: 'checkbox',
+        checked: false,
+        accelerator: 'CmdOrCtrl+T',
+        click(menuItem) {
+          if (mainWindow) {
+            mainWindow.setAlwaysOnTop(menuItem.checked);
+          }
+        }
+      },
       { role: 'reload' },
       { role: 'toggledevtools' }
     ]
