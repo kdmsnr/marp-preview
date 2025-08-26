@@ -34,14 +34,23 @@ function renderAndSend(filePath) {
   try {
     const markdown = fs.readFileSync(filePath, 'utf-8');
     const { html, css } = marp.render(markdown);
-    mainWindow.webContents.send('marp-rendered', { html, css });
-    mainWindow.setTitle(path.basename(filePath));
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('marp-rendered', { html, css });
+      mainWindow.setTitle(path.basename(filePath));
+    } else {
+      console.warn('Attempted to render to a non-existent or destroyed window.');
+    }
   } catch (error) {
     dialog.showErrorBox('Render Error', `Failed to render file: ${error.message}`);
   }
 }
 
 function openFile() {
+  // mainWindow が存在しない、または破棄されている場合は新しいウィンドウを作成
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createWindow();
+  }
+
   dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
     filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
