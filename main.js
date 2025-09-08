@@ -73,9 +73,31 @@ function startWatching(filePath) {
   if (watcher) {
     watcher.close();
   }
-  watcher = chokidar.watch(filePath, { persistent: true });
+
+  let debounceTimer;
+  watcher = chokidar.watch(filePath, {
+    persistent: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 300,
+      pollInterval: 100,
+    },
+  });
   watcher.on('change', (path) => {
-    renderAndSend(path);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      renderAndSend(path);
+    }, 300);
+  });
+
+  watcher.on('unlink', (path) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('marp-rendered', { html: '', css: '' });
+      mainWindow.setTitle('Marp Preview');
+    }
+    currentFilePath = null;
+    if (watcher) {
+      watcher.close();
+    }
   });
 }
 
