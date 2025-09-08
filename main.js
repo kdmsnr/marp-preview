@@ -36,8 +36,16 @@ function renderAndSend(filePath) {
   try {
     const markdown = fs.readFileSync(filePath, 'utf-8');
     const { html, css } = marp.render(markdown);
+
+    let customCss = '';
+    const stylePath = path.join(path.dirname(filePath), 'style.css');
+    if (fs.existsSync(stylePath)) {
+      customCss = fs.readFileSync(stylePath, 'utf-8');
+    }
+    const combinedCss = css + '\n' + customCss;
+
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('marp-rendered', { html, css });
+      mainWindow.webContents.send('marp-rendered', { html, css: combinedCss });
       mainWindow.setTitle(path.basename(filePath));
     } else {
       console.warn('Attempted to render to a non-existent or destroyed window.');
@@ -74,8 +82,15 @@ function startWatching(filePath) {
     watcher.close();
   }
 
+  const dirPath = path.dirname(filePath);
+  const stylePath = path.join(dirPath, 'style.css');
+  const filesToWatch = [filePath];
+  if (fs.existsSync(stylePath)) {
+    filesToWatch.push(stylePath);
+  }
+
   let debounceTimer;
-  watcher = chokidar.watch(filePath, {
+  watcher = chokidar.watch(filesToWatch, {
     persistent: true,
     awaitWriteFinish: {
       stabilityThreshold: 300,
@@ -85,7 +100,7 @@ function startWatching(filePath) {
   watcher.on('change', (path) => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      renderAndSend(path);
+      renderAndSend(filePath);
     }, 300);
   });
 
@@ -110,8 +125,14 @@ function marpJsPath() {
 function runMarpCLI(input, output) {
   return new Promise((resolve, reject) => {
     const cli = marpJsPath();
+    const args = [cli, input, '-o', output];
 
-    const child = spawn(process.execPath, [cli, input, '-o', output], {
+    const stylePath = path.join(path.dirname(input), 'style.css');
+    if (fs.existsSync(stylePath)) {
+      args.push('--theme', 'style.css');
+    }
+
+    const child = spawn(process.execPath, args, {
       cwd: path.dirname(input),
       env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
       stdio: ['ignore', 'ignore', 'ignore'],
