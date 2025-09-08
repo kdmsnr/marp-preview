@@ -32,20 +32,35 @@ function createWindow() {
   });
 }
 
+function getThemeFilePath(markdown, baseDir) {
+  const match = markdown.match(/---[\s\S]*?theme:\s*([\S]+)[\s\S]*?---/) || markdown.match(/<!--[\s\S]*?theme:\s*([\S]+)[\s\S]*?-->/);
+  if (match && match[1] && match[1].endsWith('.css')) {
+    const themePath = path.resolve(baseDir, match[1]);
+    if (fs.existsSync(themePath)) {
+      return themePath;
+    }
+  }
+  return null;
+}
+
 function renderAndSend(filePath) {
   try {
     const markdown = fs.readFileSync(filePath, 'utf-8');
-    const { html, css } = marp.render(markdown);
+    const dirPath = path.dirname(filePath);
+    const themePath = getThemeFilePath(markdown, dirPath);
 
-    let customCss = '';
-    const stylePath = path.join(path.dirname(filePath), 'style.css');
-    if (fs.existsSync(stylePath)) {
-      customCss = fs.readFileSync(stylePath, 'utf-8');
+    let marpInstance = marp;
+    if (themePath) {
+      marpInstance = new Marp({
+        inlineSVG: true,
+        themeSet: [themePath]
+      });
     }
-    const combinedCss = css + '\n' + customCss;
+
+    const { html, css } = marpInstance.render(markdown);
 
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('marp-rendered', { html, css: combinedCss });
+      mainWindow.webContents.send('marp-rendered', { html, css });
       mainWindow.setTitle(path.basename(filePath));
     } else {
       console.warn('Attempted to render to a non-existent or destroyed window.');
@@ -82,11 +97,13 @@ function startWatching(filePath) {
     watcher.close();
   }
 
+  const markdown = fs.readFileSync(filePath, 'utf-8');
   const dirPath = path.dirname(filePath);
-  const stylePath = path.join(dirPath, 'style.css');
+  const themePath = getThemeFilePath(markdown, dirPath);
+
   const filesToWatch = [filePath];
-  if (fs.existsSync(stylePath)) {
-    filesToWatch.push(stylePath);
+  if (themePath) {
+    filesToWatch.push(themePath);
   }
 
   let debounceTimer;
@@ -126,11 +143,6 @@ function runMarpCLI(input, output) {
   return new Promise((resolve, reject) => {
     const cli = marpJsPath();
     const args = [cli, input, '-o', output];
-
-    const stylePath = path.join(path.dirname(input), 'style.css');
-    if (fs.existsSync(stylePath)) {
-      args.push('--theme', 'style.css');
-    }
 
     const child = spawn(process.execPath, args, {
       cwd: path.dirname(input),
