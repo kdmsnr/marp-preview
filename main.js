@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { Marp } = require('@marp-team/marp-core');
-const { MarpCLI } = require('@marp-team/marp-cli');
+const marpCli = require('@marp-team/marp-cli');
 
 let mainWindow;
 let watcher;
@@ -102,13 +102,10 @@ function startWatching(filePath) {
 }
 
 async function runMarpCLI(input, output) {
-  const marpCli = new MarpCLI();
-  const markdown = fs.readFileSync(input, 'utf-8');
-  const options = {
-    input: input,
-    output: output,
-  };
-  return marpCli.convert(markdown, options);
+  const exitCode = await marpCli([input, '-o', output]);
+  if (exitCode !== 0) {
+    throw new Error(`Marp CLI exited with code ${exitCode}`);
+  }
 }
 
 async function exportFile(format) {
