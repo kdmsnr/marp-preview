@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { Marp } = require('@marp-team/marp-core');
-const { spawn } = require('child_process');
+const { MarpCLI } = require('@marp-team/marp-cli');
 
 let mainWindow;
 let watcher;
@@ -101,39 +101,14 @@ function startWatching(filePath) {
   });
 }
 
-function marpJsPath() {
-  const pkgPath = require.resolve('@marp-team/marp-cli/package.json');
-  const pkg = require(pkgPath);
-  return path.join(path.dirname(pkgPath), pkg.bin.marp);
-}
-
-function runMarpCLI(input, output) {
-  return new Promise((resolve, reject) => {
-    const cli = marpJsPath();
-
-    const child = spawn(process.execPath, [cli, input, '-o', output], {
-      cwd: path.dirname(input),
-      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-      stdio: ['ignore', 'ignore', 'ignore'],
-      windowsHide: true,
-    });
-
-    const t = setTimeout(() => {
-      child.kill();
-      reject(new Error('Marp CLI timed out'));
-    }, 60000);
-
-    child.on('error', (err) => {
-      clearTimeout(t);
-      reject(err);
-    });
-
-    child.on('close', (code) => {
-      clearTimeout(t);
-      if (code === 0) resolve();
-      else reject(new Error(`Marp CLI exited with code ${code}`));
-    });
-  });
+async function runMarpCLI(input, output) {
+  const marpCli = new MarpCLI();
+  const markdown = fs.readFileSync(input, 'utf-8');
+  const options = {
+    input: input,
+    output: output,
+  };
+  return marpCli.convert(markdown, options);
 }
 
 async function exportFile(format) {
