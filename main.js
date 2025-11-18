@@ -102,7 +102,7 @@ function startWatching(filePath) {
 }
 
 async function runMarpCLI(input, output) {
-  const exitCode = await marpCli([input, '-o', output]);
+  const exitCode = await marpCli.marpCli([input, '-o', output]);
   if (exitCode !== 0) {
     throw new Error(`Marp CLI exited with code ${exitCode}`);
   }
