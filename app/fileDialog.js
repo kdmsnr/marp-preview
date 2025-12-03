@@ -1,8 +1,6 @@
 const { dialog } = require('electron');
 const { ensureMainWindow } = require('./mainWindow');
-const { setCurrentFilePath } = require('./state');
-const { renderAndSend } = require('./markdownRenderer');
-const { startWatching } = require('./fileWatcher');
+const { loadFile } = require('./fileLoader');
 
 function openFile() {
   const mainWindow = ensureMainWindow();
@@ -13,9 +11,7 @@ function openFile() {
   }).then(result => {
     if (!result.canceled && result.filePaths.length > 0) {
       const filePath = result.filePaths[0];
-      setCurrentFilePath(filePath);
-      renderAndSend(filePath);
-      startWatching(filePath);
+      loadFile(filePath);
     }
   }).catch(err => {
     console.log(err);

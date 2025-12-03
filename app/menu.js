@@ -1,6 +1,50 @@
 const { Menu } = require('electron');
+const path = require('path');
 
-function createApplicationMenu({ openFile, exportPdf, exportPptx, toggleAlwaysOnTop }) {
+function buildRecentFilesSubmenu(recentFiles, openRecentFile, clearRecentFiles) {
+  if (!recentFiles || recentFiles.length === 0) {
+    return [
+      {
+        label: 'No recent files',
+        enabled: false,
+      },
+      { type: 'separator' },
+      {
+        label: 'Clear Recent Files',
+        enabled: false,
+      },
+    ];
+  }
+
+  const items = recentFiles.map((filePath, index) => ({
+    label: `${index + 1}. ${path.basename(filePath)}`,
+    sublabel: filePath,
+    click() {
+      openRecentFile(filePath);
+    },
+  }));
+
+  return [
+    ...items,
+    { type: 'separator' },
+    {
+      label: 'Clear Recent Files',
+      click() {
+        clearRecentFiles();
+      },
+    },
+  ];
+}
+
+function createApplicationMenu({
+  openFile,
+  exportPdf,
+  exportPptx,
+  toggleAlwaysOnTop,
+  recentFiles = [],
+  openRecentFile = () => {},
+  clearRecentFiles = () => {},
+}) {
   const menuTemplate = [
     {
       label: 'File',
@@ -11,6 +55,10 @@ function createApplicationMenu({ openFile, exportPdf, exportPptx, toggleAlwaysOn
           click() {
             openFile();
           },
+        },
+        {
+          label: 'Recent Files',
+          submenu: buildRecentFilesSubmenu(recentFiles, openRecentFile, clearRecentFiles),
         },
         {
           label: 'Export',
