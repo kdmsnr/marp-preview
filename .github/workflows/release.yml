@@ -35,3 +35,8 @@ jobs:
         run: ${{ matrix.build-command }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**
