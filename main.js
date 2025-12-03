@@ -1,198 +1,9 @@
-const { app, BrowserWindow, dialog, Menu } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const chokidar = require('chokidar');
-const { Marp } = require('@marp-team/marp-core');
-const marpCli = require('@marp-team/marp-cli');
-
-let mainWindow;
-let watcher;
-let currentFilePath = null;
-
-const marp = new Marp({ inlineSVG: true });
-
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
-
-  mainWindow.loadFile('index.html');
-
-  mainWindow.on('closed', function () {
-    mainWindow = null;
-    if (watcher) {
-      watcher.close();
-    }
-  });
-}
-
-function renderAndSend(filePath) {
-  try {
-    const markdown = fs.readFileSync(filePath, 'utf-8');
-    const { html, css } = marp.render(markdown);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('marp-rendered', { html, css });
-      mainWindow.setTitle(path.basename(filePath));
-    } else {
-      console.warn('Attempted to render to a non-existent or destroyed window.');
-    }
-  }
-  catch (error) {
-    dialog.showErrorBox('Render Error', `Failed to render file: ${error.message}`);
-  }
-}
-
-function openFile() {
-  if (!mainWindow || mainWindow.isDestroyed()) {
-    createWindow();
-  }
-
-  dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile'],
-    filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
-  }).then(result => {
-    if (!result.canceled && result.filePaths.length > 0) {
-      const filePath = result.filePaths[0];
-      currentFilePath = filePath;
-      renderAndSend(filePath);
-      startWatching(filePath);
-    }
-  }).catch(err => {
-    console.log(err);
-    dialog.showErrorBox('Dialog Error', `An error occurred: ${err.message}`);
-  });
-}
-
-function startWatching(filePath) {
-  if (watcher) {
-    watcher.close();
-  }
-
-  let debounceTimer;
-  watcher = chokidar.watch(filePath, {
-    persistent: true,
-    awaitWriteFinish: {
-      stabilityThreshold: 300,
-      pollInterval: 100,
-    },
-  });
-  watcher.on('change', (path) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      renderAndSend(path);
-    }, 300);
-  });
-
-  watcher.on('unlink', (path) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('marp-rendered', { html: '', css: '' });
-      mainWindow.setTitle('Marp Preview');
-    }
-    currentFilePath = null;
-    if (watcher) {
-      watcher.close();
-    }
-  });
-}
-
-async function runMarpCLI(input, output) {
-  const exitCode = await marpCli.marpCli([input, '-o', output]);
-  if (exitCode !== 0) {
-    throw new Error(`Marp CLI exited with code ${exitCode}`);
-  }
-}
-
-async function exportFile(format) {
-  if (!currentFilePath) {
-    dialog.showErrorBox('Export Error', 'No file is currently open to export.');
-    return;
-  }
-
-  const defaultFileName = `${path.basename(currentFilePath, path.extname(currentFilePath))}.${format}`;
-  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
-    defaultPath: defaultFileName,
-    filters: [{ name: format.toUpperCase(), extensions: [format] }],
-  });
-  if (canceled || !filePath) return;
-
-  try {
-    await runMarpCLI(currentFilePath, filePath);
-    fs.accessSync(filePath, fs.constants.R_OK);
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: 'Export Successful',
-      message: `File exported to:\n${filePath}`,
-    });
-  }
-  catch (e) {
-    dialog.showErrorBox('Export Failed', e.message);
-  }
-}
-
-const menuTemplate = [
-  {
-    label: 'File',
-    submenu: [
-      {
-        label: 'Open File',
-        accelerator: 'CmdOrCtrl+O',
-        click() {
-          openFile();
-        },
-      },
-      {
-        label: 'Export',
-        submenu: [
-          {
-            label: 'Export as PDF',
-            click() {
-              exportFile('pdf');
-            },
-          },
-          {
-            label: 'Export as PPTX',
-            click() {
-              exportFile('pptx');
-            },
-          },
-        ],
-      },
-      {
-        role: 'quit'
-      }
-    ],
-  },
-  {
-    label: 'View',
-    submenu: [
-      {
-        label: 'Always On Top',
-        type: 'checkbox',
-        checked: false,
-        accelerator: 'CmdOrCtrl+T',
-        click(menuItem) {
-          if (mainWindow) {
-            mainWindow.setAlwaysOnTop(menuItem.checked);
-          }
-        }
-      },
-      { role: 'reload' },
-      { role: 'toggledevtools' }
-    ]
-  }
-];
-
-app.on('ready', () => {
-  createWindow();
-  const menu = Menu.buildFromTemplate(menuTemplate);
-  Menu.setApplicationMenu(menu);
-});
+const { app, Menu } = require('electron');
+const { createMainWindow, ensureMainWindow } = require('./app/mainWindow');
+const { createApplicationMenu } = require('./app/menu');
+const { openFile } = require('./app/fileDialog');
+const { exportFile } = require('./app/exporter');
+const { setAlwaysOnTop } = require('./app/windowActions');
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -201,7 +12,16 @@ app.on('window-all-closed', function () {
 });
 
 app.on('activate', function () {
-  if (mainWindow === null) {
-    createWindow();
-  }
+  ensureMainWindow();
+});
+
+app.whenReady().then(() => {
+  createMainWindow();
+  const menu = createApplicationMenu({
+    openFile,
+    exportPdf: () => exportFile('pdf'),
+    exportPptx: () => exportFile('pptx'),
+    toggleAlwaysOnTop: setAlwaysOnTop,
+  });
+  Menu.setApplicationMenu(menu);
 });
