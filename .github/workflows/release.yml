@@ -62,6 +62,7 @@ jobs:
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name }}
           files: |
             dist/**/*.dmg
             dist/**/*.exe
