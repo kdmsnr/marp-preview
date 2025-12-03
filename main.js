@@ -29,22 +29,26 @@ app.whenReady().then(() => {
   const storagePath = path.join(app.getPath('userData'), 'recent-files.json');
   initializeRecentFiles(storagePath);
 
-  const buildMenu = (recentFiles) => createApplicationMenu({
-    openFile,
-    exportPdf: () => exportFile('pdf'),
-    exportPptx: () => exportFile('pptx'),
-    toggleAlwaysOnTop: setAlwaysOnTop,
-    recentFiles,
-    openRecentFile: (filePath) => {
-      if (!fs.existsSync(filePath)) {
-        dialog.showErrorBox('File not found', `The file "${filePath}" cannot be opened because it no longer exists.`);
-        removeRecentFile(filePath);
-        return;
-      }
-      loadFile(filePath);
-    },
-    clearRecentFiles,
-  });
+  const buildMenu = (recentFiles) =>
+    createApplicationMenu({
+      openFile,
+      exportPdf: () => exportFile('pdf'),
+      exportPptx: () => exportFile('pptx'),
+      toggleAlwaysOnTop: setAlwaysOnTop,
+      recentFiles,
+      openRecentFile: (filePath) => {
+        if (!fs.existsSync(filePath)) {
+          dialog.showErrorBox(
+            'File not found',
+            `The file "${filePath}" cannot be opened because it no longer exists.`,
+          );
+          removeRecentFile(filePath);
+          return;
+        }
+        loadFile(filePath);
+      },
+      clearRecentFiles,
+    });
 
   const refreshMenu = (recentFiles) => {
     const menu = buildMenu(recentFiles);

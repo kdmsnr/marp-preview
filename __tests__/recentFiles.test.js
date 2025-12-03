@@ -5,10 +5,11 @@ const path = require('path');
 describe('recentFiles', () => {
   let recentFiles;
 
-  const createTempStoragePath = () => path.join(
-    os.tmpdir(),
-    `marp-preview-tests-${Date.now()}-${Math.random().toString(16).slice(2)}.json`,
-  );
+  const createTempStoragePath = () =>
+    path.join(
+      os.tmpdir(),
+      `marp-preview-tests-${Date.now()}-${Math.random().toString(16).slice(2)}.json`,
+    );
 
   const removeFile = (filePath) => {
     try {
@@ -74,10 +75,7 @@ describe('recentFiles', () => {
     recentFiles.clearRecentFiles();
 
     expect(recentFiles.getRecentFiles()).toEqual([]);
-    expect(events).toEqual([
-      ['/tmp/sample.md'],
-      [],
-    ]);
+    expect(events).toEqual([['/tmp/sample.md'], []]);
 
     unsubscribe();
   });
@@ -86,7 +84,11 @@ describe('recentFiles', () => {
     const storagePath = createTempStoragePath();
 
     try {
-      fs.writeFileSync(storagePath, JSON.stringify(['/tmp/persisted.md']), 'utf-8');
+      fs.writeFileSync(
+        storagePath,
+        JSON.stringify(['/tmp/persisted.md']),
+        'utf-8',
+      );
       recentFiles.initializeRecentFiles(storagePath);
 
       expect(recentFiles.getRecentFiles()).toEqual(['/tmp/persisted.md']);

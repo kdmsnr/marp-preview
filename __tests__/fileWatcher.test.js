@@ -31,9 +31,13 @@ jest.mock('../app/state', () => {
   let watcher = null;
 
   const api = {
-    clearWatcher: jest.fn(() => { watcher = null; }),
+    clearWatcher: jest.fn(() => {
+      watcher = null;
+    }),
     getWatcher: jest.fn(() => watcher),
-    setWatcher: jest.fn((newWatcher) => { watcher = newWatcher; }),
+    setWatcher: jest.fn((newWatcher) => {
+      watcher = newWatcher;
+    }),
     getMainWindow: jest.fn(() => mainWindow),
     setCurrentFilePath: jest.fn(),
   };
@@ -111,7 +115,10 @@ describe('fileWatcher', () => {
     watcher.emit('unlink');
 
     expect(state.setCurrentFilePath).toHaveBeenCalledWith(null);
-    expect(mainWindow.webContents.send).toHaveBeenCalledWith('marp-rendered', { html: '', css: '' });
+    expect(mainWindow.webContents.send).toHaveBeenCalledWith('marp-rendered', {
+      html: '',
+      css: '',
+    });
     expect(mainWindow.setTitle).toHaveBeenCalledWith('Marp Preview');
     expect(watcher.close).toHaveBeenCalledTimes(1);
   });

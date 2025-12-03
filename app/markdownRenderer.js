@@ -15,11 +15,15 @@ async function renderAndSend(filePath) {
       mainWindow.webContents.send('marp-rendered', { html, css });
       mainWindow.setTitle(path.basename(filePath));
     } else {
-      console.warn('Attempted to render to a non-existent or destroyed window.');
+      console.warn(
+        'Attempted to render to a non-existent or destroyed window.',
+      );
     }
-  }
-  catch (error) {
-    dialog.showErrorBox('Render Error', `Failed to render file: ${error.message}`);
+  } catch (error) {
+    dialog.showErrorBox(
+      'Render Error',
+      `Failed to render file: ${error.message}`,
+    );
   }
 }
 

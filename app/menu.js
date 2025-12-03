@@ -1,7 +1,11 @@
 const { Menu } = require('electron');
 const path = require('path');
 
-function buildRecentFilesSubmenu(recentFiles, openRecentFile, clearRecentFiles) {
+function buildRecentFilesSubmenu(
+  recentFiles,
+  openRecentFile,
+  clearRecentFiles,
+) {
   if (!recentFiles || recentFiles.length === 0) {
     return [
       {
@@ -58,7 +62,11 @@ function createApplicationMenu({
         },
         {
           label: 'Recent Files',
-          submenu: buildRecentFilesSubmenu(recentFiles, openRecentFile, clearRecentFiles),
+          submenu: buildRecentFilesSubmenu(
+            recentFiles,
+            openRecentFile,
+            clearRecentFiles,
+          ),
         },
         {
           label: 'Export',

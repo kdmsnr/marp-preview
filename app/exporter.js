@@ -35,8 +35,7 @@ async function exportFile(format) {
       title: 'Export Successful',
       message: `File exported to:\n${filePath}`,
     });
-  }
-  catch (e) {
+  } catch (e) {
     dialog.showErrorBox('Export Failed', e.message);
   }
 }

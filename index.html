@@ -1,38 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; style-src 'self' 'unsafe-inline'">
-  <title>Marp Preview</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      background-color: #f0f0f0;
-    }
-    #marp-container {
-      width: 100%;
-      height: 100%;
-      overflow: auto; /* Allow scrolling */
-    }
-    /* --- CSS Override for continuous scrolling --- */
-    .marpit > .marpit-slide {
-      display: block !important;
-      position: relative !important; /* Override absolute positioning */
-      margin: 40px auto !important; /* Add space between slides */
-      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-      border-radius: 4px;
-    }
-    /* Hide the slide counter */
-    .marpit-pagination {
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    <title>Marp Preview</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+      }
+      #marp-container {
+        width: 100%;
+        height: 100%;
+        overflow: auto; /* Allow scrolling */
+      }
+      /* --- CSS Override for continuous scrolling --- */
+      .marpit > .marpit-slide {
+        display: block !important;
+        position: relative !important; /* Override absolute positioning */
+        margin: 40px auto !important; /* Add space between slides */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+      }
+      /* Hide the slide counter */
+      .marpit-pagination {
         display: none !important;
-    }
-  </style>
-</head>
-<body>
-  <div id="marp-container">
-    <p style="text-align: center; padding-top: 40px;">Open a Markdown file to see the preview (File > Open File or CmdOrCtrl+O)</p>
-  </div>
-  <script src="./renderer.js"></script>
-</body>
+      }
+    </style>
+  </head>
+  <body>
+    <div id="marp-container">
+      <p style="text-align: center; padding-top: 40px">
+        Open a Markdown file to see the preview (File > Open File or
+        CmdOrCtrl+O)
+      </p>
+    </div>
+    <script src="./renderer.js"></script>
+  </body>
 </html>

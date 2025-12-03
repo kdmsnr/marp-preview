@@ -48,12 +48,14 @@ npm start
 
 - **現在のOS向けにビルド**
   現在作業しているOS（macOSまたはWindows）向けのアプリケーションをビルドします。
+
   ```bash
   npm run dist
   ```
 
 - **macOS向けにビルド**
   macOS向けのアプリケーション（`.app`と`.dmg`インストーラー）をビルドします。
+
   ```bash
   npm run dist:mac
   ```

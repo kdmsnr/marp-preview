@@ -24,7 +24,11 @@ function persistRecentFiles() {
   }
   try {
     ensureStorageDir();
-    fs.writeFileSync(storagePath, JSON.stringify(recentFiles, null, 2), 'utf-8');
+    fs.writeFileSync(
+      storagePath,
+      JSON.stringify(recentFiles, null, 2),
+      'utf-8',
+    );
   } catch (error) {
     console.error('Failed to save recent files', error);
   }
@@ -73,7 +77,10 @@ function addRecentFile(filePath) {
     return;
   }
 
-  const next = [filePath, ...recentFiles.filter((existing) => existing !== filePath)];
+  const next = [
+    filePath,
+    ...recentFiles.filter((existing) => existing !== filePath),
+  ];
   recentFiles = next.slice(0, MAX_RECENT_FILES);
   notifyListeners();
   persistRecentFiles();
