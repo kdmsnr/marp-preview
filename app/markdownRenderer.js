@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const { dialog } = require('electron');
 const { Marp } = require('@marp-team/marp-core');
@@ -6,9 +6,9 @@ const { getMainWindow } = require('./state');
 
 const marp = new Marp({ inlineSVG: true });
 
-function renderAndSend(filePath) {
+async function renderAndSend(filePath) {
   try {
-    const markdown = fs.readFileSync(filePath, 'utf-8');
+    const markdown = await fs.readFile(filePath, 'utf-8');
     const { html, css } = marp.render(markdown);
     const mainWindow = getMainWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {

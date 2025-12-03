@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
 const { dialog } = require('electron');
 const marpCli = require('@marp-team/marp-cli');
@@ -28,7 +29,7 @@ async function exportFile(format) {
 
   try {
     await runMarpCLI(currentFilePath, filePath);
-    fs.accessSync(filePath, fs.constants.R_OK);
+    await fsPromises.access(filePath, fs.constants.R_OK);
     dialog.showMessageBox(mainWindow, {
       type: 'info',
       title: 'Export Successful',
