@@ -112,4 +112,20 @@ describe('recentFiles', () => {
       removeFile(storagePath);
     }
   });
+
+  test('initialization enforces the maximum number of entries', () => {
+    const storagePath = createTempStoragePath();
+    const entries = Array.from({ length: 15 }, (_, index) => `/tmp/file-${index}.md`);
+
+    try {
+      fs.writeFileSync(storagePath, JSON.stringify(entries), 'utf-8');
+      recentFiles.initializeRecentFiles(storagePath);
+
+      const stored = recentFiles.getRecentFiles();
+      expect(stored).toHaveLength(10);
+      expect(stored[0]).toBe('/tmp/file-0.md');
+    } finally {
+      removeFile(storagePath);
+    }
+  });
 });

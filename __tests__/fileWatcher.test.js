@@ -127,4 +127,15 @@ describe('fileWatcher', () => {
     expect(() => stopWatching()).not.toThrow();
     expect(state.clearWatcher).not.toHaveBeenCalled();
   });
+
+  test('clears the debounce timer when watching stops', () => {
+    startWatching('deck.md');
+    const watcher = chokidar.__getWatchers()[0];
+    watcher.emit('change', 'deck.md');
+
+    stopWatching();
+    jest.advanceTimersByTime(300);
+
+    expect(renderAndSend).not.toHaveBeenCalled();
+  });
 });

@@ -8,9 +8,17 @@ const {
 } = require('./state');
 const { renderAndSend } = require('./markdownRenderer');
 
-let debounceTimer;
+let debounceTimer = null;
+
+function clearPendingRender() {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+}
 
 function stopWatching() {
+  clearPendingRender();
   const watcher = getWatcher();
   if (watcher) {
     watcher.close();
@@ -32,9 +40,10 @@ function startWatching(filePath) {
   setWatcher(watcher);
 
   watcher.on('change', (changedPath) => {
-    clearTimeout(debounceTimer);
+    clearPendingRender();
     debounceTimer = setTimeout(() => {
       renderAndSend(changedPath);
+      debounceTimer = null;
     }, 300);
   });
 

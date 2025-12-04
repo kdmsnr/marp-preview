@@ -56,7 +56,9 @@ function initializeRecentFiles(filePath) {
       const contents = fs.readFileSync(storagePath, 'utf-8');
       const parsed = JSON.parse(contents);
       if (Array.isArray(parsed)) {
-        recentFiles = parsed.filter((entry) => typeof entry === 'string');
+        recentFiles = parsed
+          .filter((entry) => typeof entry === 'string')
+          .slice(0, MAX_RECENT_FILES);
       }
     } else {
       ensureStorageDir();
