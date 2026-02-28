@@ -45,6 +45,7 @@ function createApplicationMenu({
   exportPdf,
   exportPptx,
   toggleAlwaysOnTop,
+  alwaysOnTop = false,
   recentFiles = [],
   openRecentFile = () => {},
   clearRecentFiles = () => {},
@@ -96,7 +97,7 @@ function createApplicationMenu({
         {
           label: 'Always On Top',
           type: 'checkbox',
-          checked: false,
+          checked: alwaysOnTop,
           accelerator: 'CmdOrCtrl+T',
           click(menuItem) {
             toggleAlwaysOnTop(menuItem.checked);

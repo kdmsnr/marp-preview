@@ -1,7 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const { app, Menu, dialog } = require('electron');
-const { createMainWindow, ensureMainWindow } = require('./app/mainWindow');
+const {
+  createMainWindow,
+  ensureMainWindow,
+  getMainWindow,
+} = require('./app/mainWindow');
 const { createApplicationMenu } = require('./app/menu');
 const { openFile } = require('./app/fileDialog');
 const { loadFile } = require('./app/fileLoader');
@@ -35,6 +39,7 @@ app.whenReady().then(() => {
       exportPdf: () => exportFile('pdf'),
       exportPptx: () => exportFile('pptx'),
       toggleAlwaysOnTop: setAlwaysOnTop,
+      alwaysOnTop: Boolean(getMainWindow()?.isAlwaysOnTop?.()),
       recentFiles,
       openRecentFile: (filePath) => {
         if (!fs.existsSync(filePath)) {

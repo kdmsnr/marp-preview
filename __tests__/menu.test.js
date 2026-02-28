@@ -24,6 +24,7 @@ describe('menu', () => {
 
     createApplicationMenu({
       ...handlers,
+      alwaysOnTop: true,
       recentFiles: [],
     });
 
@@ -35,6 +36,7 @@ describe('menu', () => {
       enabled: false,
     });
     const alwaysOnTop = template[1].submenu[0];
+    expect(alwaysOnTop.checked).toBe(true);
     alwaysOnTop.click({ checked: true });
     expect(handlers.toggleAlwaysOnTop).toHaveBeenCalledWith(true);
   });
