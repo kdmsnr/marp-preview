@@ -1,6 +1,9 @@
 const mockReadFile = jest.fn();
 const mockShowErrorBox = jest.fn();
 const mockRender = jest.fn();
+const mockCreateMarp = jest.fn(() => ({
+  render: mockRender,
+}));
 
 const mockMainWindow = {
   webContents: { send: jest.fn() },
@@ -20,10 +23,8 @@ jest.mock('electron', () => ({
   },
 }));
 
-jest.mock('@marp-team/marp-core', () => ({
-  Marp: jest.fn(() => ({
-    render: mockRender,
-  })),
+jest.mock('../app/marp', () => ({
+  createMarp: mockCreateMarp,
 }));
 
 jest.mock('../app/state', () => ({
@@ -32,7 +33,6 @@ jest.mock('../app/state', () => ({
 
 const state = require('../app/state');
 const { dialog } = require('electron');
-const { Marp } = require('@marp-team/marp-core');
 const { renderAndSend } = require('../app/markdownRenderer');
 
 describe('markdownRenderer', () => {
@@ -94,7 +94,7 @@ describe('markdownRenderer', () => {
     expect(mockMainWindow.setTitle).not.toHaveBeenCalled();
   });
 
-  test('constructs Marp with inline SVG enabled', () => {
-    expect(Marp).toHaveBeenCalledWith({ inlineSVG: true });
+  test('creates a Marp renderer with the shared factory', () => {
+    expect(mockCreateMarp).toHaveBeenCalledTimes(1);
   });
 });

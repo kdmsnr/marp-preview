@@ -1,10 +1,10 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { dialog } = require('electron');
-const { Marp } = require('@marp-team/marp-core');
+const { createMarp } = require('./marp');
 const { getMainWindow } = require('./state');
 
-const marp = new Marp({ inlineSVG: true });
+const marp = createMarp();
 
 async function renderAndSend(filePath) {
   try {

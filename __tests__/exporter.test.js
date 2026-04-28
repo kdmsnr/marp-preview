@@ -34,6 +34,9 @@ jest.mock('../app/state', () => ({
 
 const state = require('../app/state');
 const { exportFile } = require('../app/exporter');
+const path = require('path');
+
+const enginePath = path.join(__dirname, '..', 'app', 'marpEngine.js');
 
 describe('exporter', () => {
   beforeEach(() => {
@@ -73,7 +76,13 @@ describe('exporter', () => {
 
     await exportFile('pdf');
 
-    expect(mockMarpCli).toHaveBeenCalledWith(['/tmp/deck.md', '-o', '/tmp/output.pdf']);
+    expect(mockMarpCli).toHaveBeenCalledWith([
+      '--engine',
+      enginePath,
+      '/tmp/deck.md',
+      '-o',
+      '/tmp/output.pdf',
+    ]);
     expect(mockAccess).toHaveBeenCalledWith(
       '/tmp/output.pdf',
       expect.any(Number),

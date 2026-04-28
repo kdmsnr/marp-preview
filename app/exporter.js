@@ -5,8 +5,16 @@ const { dialog } = require('electron');
 const marpCli = require('@marp-team/marp-cli');
 const { getCurrentFilePath, getMainWindow } = require('./state');
 
+const enginePath = path.join(__dirname, 'marpEngine.js');
+
 async function runMarpCLI(input, output) {
-  const exitCode = await marpCli.marpCli([input, '-o', output]);
+  const exitCode = await marpCli.marpCli([
+    '--engine',
+    enginePath,
+    input,
+    '-o',
+    output,
+  ]);
   if (exitCode !== 0) {
     throw new Error(`Marp CLI exited with code ${exitCode}`);
   }
