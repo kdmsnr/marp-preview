@@ -21,14 +21,14 @@ div.marpit > svg[data-marpit-svg] > foreignObject > section,
 section .footnotes {
   position: absolute !important;
   right: 2.5em !important;
-  bottom: 5em !important;
+  bottom: 80px !important;
   left: 2.5em !important;
   display: block !important;
   width: auto !important;
   height: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 0.45em !important;
+  font-size: 0.6em !important;
   line-height: 1.25 !important;
   opacity: 0.82 !important;
   z-index: 1 !important;
@@ -90,6 +90,26 @@ function collectReferenceTokens(state) {
   const definitionsBySlide = new Map();
   const refTokens = {};
 
+  const appendDefinition = (label, tokens, targetSlideIndex) => {
+    const key = `${targetSlideIndex}:${label}`;
+    refTokens[`:${key}`] = tokens;
+    if (!definitionsBySlide.has(targetSlideIndex)) {
+      definitionsBySlide.set(targetSlideIndex, []);
+    }
+
+    const definitions = definitionsBySlide.get(targetSlideIndex);
+    const existingIndex = definitions.findIndex(
+      (definition) => definition.label === label,
+    );
+    const definition = { key, label };
+
+    if (existingIndex >= 0) {
+      definitions[existingIndex] = definition;
+    } else {
+      definitions.push(definition);
+    }
+  };
+
   state.tokens = state.tokens.filter((token) => {
     if (!insideReference && token.type === 'hr' && token.level === 0) {
       slideIndex += 1;
@@ -106,11 +126,7 @@ function collectReferenceTokens(state) {
 
     if (token.type === 'footnote_reference_close') {
       insideReference = false;
-      refTokens[`:${currentLabel}`] = current;
-      if (!definitionsBySlide.has(currentSlideIndex)) {
-        definitionsBySlide.set(currentSlideIndex, []);
-      }
-      definitionsBySlide.get(currentSlideIndex).push(currentLabel);
+      appendDefinition(currentLabel, current, currentSlideIndex);
       return false;
     }
 
@@ -123,6 +139,63 @@ function collectReferenceTokens(state) {
   });
 
   return { definitionsBySlide, refTokens };
+}
+
+function createFootnoteContext(originalList, refTokens) {
+  return {
+    idsByKey: new Map(),
+    list: [],
+    originalList,
+    refTokens,
+  };
+}
+
+function assignScopedFootnoteId(context, key, footnote) {
+  if (context.idsByKey.has(key)) return context.idsByKey.get(key);
+
+  const id = context.list.length;
+  context.idsByKey.set(key, id);
+  context.list[id] = footnote;
+  return id;
+}
+
+function scopeFootnoteReferences(slideTokens, definitions, context) {
+  const definitionsByLabel = new Map(
+    definitions.map((definition) => [definition.label, definition]),
+  );
+  const referencedDefinitionKeys = new Set();
+  const subIdsByKey = new Map();
+
+  visitTokenTree(slideTokens, (token) => {
+    if (token.type !== 'footnote_ref' || !token.meta) return;
+    if (typeof token.meta.id !== 'number') return;
+
+    let key;
+    let footnote;
+
+    if (token.meta.label) {
+      const definition = definitionsByLabel.get(token.meta.label);
+      if (!definition) return;
+
+      key = `label:${definition.key}`;
+      footnote = { label: definition.key };
+      referencedDefinitionKeys.add(definition.key);
+    } else {
+      key = `inline:${token.meta.id}`;
+      footnote = context.originalList[token.meta.id];
+      if (!footnote) return;
+    }
+
+    const id = assignScopedFootnoteId(context, key, footnote);
+    const subId = subIdsByKey.get(key) || 0;
+    subIdsByKey.set(key, subId + 1);
+
+    token.meta.id = id;
+    token.meta.subId = subId;
+    if (token.meta.label) token.meta.label = footnote.label;
+  });
+
+  return referencedDefinitionKeys;
 }
 
 function getFootnoteContentTokens(footnote, refTokens) {
@@ -263,24 +336,33 @@ function appendSlideFootnotes(
   state,
   outputTokens,
   slideTokens,
-  list,
-  refTokens,
-  definedLabels,
+  context,
+  slideIndex,
+  definitions,
 ) {
   outputTokens.push(...slideTokens);
 
-  const slideFootnotes = collectSlideFootnotes(slideTokens, list, refTokens);
-  const plainLabels = definedLabels.filter(
-    (label) => state.env.footnotes.refs?.[`:${label}`] === -1,
+  const referencedDefinitionKeys = scopeFootnoteReferences(
+    slideTokens,
+    definitions,
+    context,
   );
+  const slideFootnotes = collectSlideFootnotes(
+    slideTokens,
+    context.list,
+    context.refTokens,
+  );
+  const plainLabels = definitions
+    .filter((definition) => !referencedDefinitionKeys.has(definition.key))
+    .map((definition) => definition.key);
   if (slideFootnotes.size === 0 && plainLabels.length === 0) return;
 
   outputTokens.push(
     ...createFootnoteBlockTokens(
       state,
       slideFootnotes,
-      list,
-      refTokens,
+      context.list,
+      context.refTokens,
       plainLabels,
     ),
   );
@@ -290,7 +372,10 @@ function slideAwareFootnoteTail(state) {
   if (!state.env.footnotes) return;
 
   const { definitionsBySlide, refTokens } = collectReferenceTokens(state);
-  const list = state.env.footnotes.list || [];
+  const context = createFootnoteContext(
+    state.env.footnotes.list || [],
+    refTokens,
+  );
 
   const outputTokens = [];
   let slideTokens = [];
@@ -302,8 +387,8 @@ function slideAwareFootnoteTail(state) {
         state,
         outputTokens,
         slideTokens,
-        list,
-        refTokens,
+        context,
+        slideIndex,
         definitionsBySlide.get(slideIndex) || [],
       );
       outputTokens.push(token);
@@ -318,8 +403,8 @@ function slideAwareFootnoteTail(state) {
     state,
     outputTokens,
     slideTokens,
-    list,
-    refTokens,
+    context,
+    slideIndex,
     definitionsBySlide.get(slideIndex) || [],
   );
   state.tokens = outputTokens;

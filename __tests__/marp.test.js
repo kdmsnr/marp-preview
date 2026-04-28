@@ -86,6 +86,35 @@ describe('createMarp', () => {
     expect(html[1]).toContain('<li id="fn2" class="footnote-item">');
   });
 
+  test('scopes repeated footnote labels to each page', () => {
+    const marp = createMarp();
+    const markdown = [
+      '# First',
+      '',
+      'First note[^id]',
+      '',
+      '[^id]: First page note.',
+      '',
+      '---',
+      '',
+      '# Second',
+      '',
+      'Second note[^id]',
+      '',
+      '[^id]: Second page note.',
+    ].join('\n');
+
+    const { html } = marp.render(markdown, { htmlAsArray: true });
+
+    expect(html[0]).toContain('id="fnref1">[1]</a>');
+    expect(html[0]).toContain('First page note.');
+    expect(html[0]).not.toContain('Second page note.');
+    expect(html[1]).toContain('id="fnref2">[1]</a>');
+    expect(html[1]).toContain('Second page note.');
+    expect(html[1]).not.toContain('First page note.');
+    expect(html[1]).not.toContain('[1:1]');
+  });
+
   test('renders unreferenced footnote definitions as plain page notes', () => {
     const marp = createMarp();
     const { html } = marp.render('## Footnote only\n\n[^id]: note');
