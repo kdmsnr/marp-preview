@@ -61,7 +61,9 @@ describe('markdownRenderer', () => {
     await renderAndSend('/tmp/slides.md');
 
     expect(mockReadFile).toHaveBeenCalledWith('/tmp/slides.md', 'utf-8');
-    expect(mockRender).toHaveBeenCalledWith('# Sample');
+    expect(mockRender).toHaveBeenCalledWith('# Sample', {
+      localImageBasePath: '/tmp',
+    });
     expect(mockMainWindow.webContents.send).toHaveBeenCalledWith(
       'marp-rendered',
       { html: '<h1>Sample</h1>', css: 'body{}' },

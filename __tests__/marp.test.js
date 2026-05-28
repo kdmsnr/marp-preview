@@ -1,6 +1,7 @@
 const { FOOTNOTE_CSS } = require('../app/footnotes');
 const { createMarp } = require('../app/marp');
 const marpPreviewEngine = require('../app/marpEngine');
+const { PAGINATION_CSS } = require('../app/pagination');
 
 describe('createMarp', () => {
   test('constructs Marp with inline SVG enabled by default', () => {
@@ -170,6 +171,29 @@ describe('createMarp', () => {
     expect(css).toContain('position: absolute !important;');
     expect(css).not.toContain(':has(.footnotes)');
     expect(css).toContain('position: relative !important;');
+  });
+
+  test('renders pagination as current over total', () => {
+    const marp = createMarp();
+    const markdown = [
+      '---',
+      'paginate: true',
+      '---',
+      '',
+      '# First',
+      '',
+      '---',
+      '',
+      '# Second',
+    ].join('\n');
+
+    const { css, html } = marp.render(markdown, { htmlAsArray: true });
+
+    expect(css).toContain(PAGINATION_CSS);
+    expect(html[0]).toContain('data-marpit-pagination="1"');
+    expect(html[0]).toContain('data-marpit-pagination-total="2"');
+    expect(html[1]).toContain('data-marpit-pagination="2"');
+    expect(html[1]).toContain('data-marpit-pagination-total="2"');
   });
 
   test('exports a Marp CLI engine that creates a renderer from CLI options', () => {
