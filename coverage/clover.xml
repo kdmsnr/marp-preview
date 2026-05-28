@@ -1,32 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1764863991914" clover="3.2.0">
-  <project timestamp="1764863991914" name="All files">
-    <metrics statements="197" coveredstatements="191" conditionals="55" coveredconditionals="48" methods="48" coveredmethods="46" elements="300" coveredelements="285" complexity="0" loc="197" ncloc="197" packages="1" files="10" classes="10"/>
+<coverage generated="1779974520688" clover="3.2.0">
+  <project timestamp="1779974520688" name="All files">
+    <metrics statements="547" coveredstatements="529" conditionals="248" coveredconditionals="196" methods="114" coveredmethods="109" elements="909" coveredelements="834" complexity="0" loc="547" ncloc="547" packages="1" files="16" classes="16"/>
+    <file name="citations.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/citations.js">
+      <metrics statements="102" coveredstatements="96" conditionals="65" coveredconditionals="48" methods="25" coveredmethods="25"/>
+      <line num="1" count="4" type="stmt"/>
+      <line num="2" count="4" type="stmt"/>
+      <line num="3" count="4" type="stmt"/>
+      <line num="4" count="4" type="stmt"/>
+      <line num="5" count="4" type="stmt"/>
+      <line num="7" count="4" type="stmt"/>
+      <line num="8" count="4" type="stmt"/>
+      <line num="10" count="4" type="stmt"/>
+      <line num="11" count="4" type="stmt"/>
+      <line num="12" count="4" type="stmt"/>
+      <line num="13" count="4" type="stmt"/>
+      <line num="14" count="4" type="stmt"/>
+      <line num="16" count="4" type="stmt"/>
+      <line num="32" count="7" type="stmt"/>
+      <line num="35" count="7" type="stmt"/>
+      <line num="39" count="7" type="cond" truecount="2" falsecount="0"/>
+      <line num="41" count="7" type="cond" truecount="1" falsecount="1"/>
+      <line num="43" count="7" type="stmt"/>
+      <line num="44" count="7" type="cond" truecount="1" falsecount="1"/>
+      <line num="45" count="7" type="cond" truecount="1" falsecount="1"/>
+      <line num="50" count="7" type="stmt"/>
+      <line num="52" count="0" type="stmt"/>
+      <line num="54" count="0" type="stmt"/>
+      <line num="59" count="14" type="cond" truecount="2" falsecount="0"/>
+      <line num="60" count="1" type="stmt"/>
+      <line num="63" count="13" type="cond" truecount="1" falsecount="1"/>
+      <line num="64" count="13" type="cond" truecount="3" falsecount="1"/>
+      <line num="65" count="0" type="stmt"/>
+      <line num="68" count="13" type="stmt"/>
+      <line num="72" count="12" type="cond" truecount="1" falsecount="1"/>
+      <line num="78" count="12" type="stmt"/>
+      <line num="80" count="12" type="stmt"/>
+      <line num="81" count="12" type="stmt"/>
+      <line num="82" count="12" type="stmt"/>
+      <line num="84" count="0" type="stmt"/>
+      <line num="93" count="21" type="stmt"/>
+      <line num="94" count="16" type="cond" truecount="1" falsecount="1"/>
+      <line num="96" count="16" type="stmt"/>
+      <line num="97" count="16" type="stmt"/>
+      <line num="98" count="21" type="stmt"/>
+      <line num="99" count="21" type="cond" truecount="4" falsecount="0"/>
+      <line num="100" count="20" type="stmt"/>
+      <line num="103" count="15" type="stmt"/>
+      <line num="107" count="6" type="stmt"/>
+      <line num="115" count="6" type="stmt"/>
+      <line num="116" count="6" type="stmt"/>
+      <line num="117" count="6" type="stmt"/>
+      <line num="119" count="6" type="cond" truecount="2" falsecount="0"/>
+      <line num="120" count="1" type="stmt"/>
+      <line num="123" count="6" type="stmt"/>
+      <line num="127" count="7" type="stmt"/>
+      <line num="128" count="7" type="stmt"/>
+      <line num="132" count="7" type="stmt"/>
+      <line num="133" count="6" type="cond" truecount="1" falsecount="1"/>
+      <line num="134" count="0" type="stmt"/>
+      <line num="137" count="6" type="stmt"/>
+      <line num="142" count="6" type="stmt"/>
+      <line num="144" count="6" type="stmt"/>
+      <line num="152" count="6" type="stmt"/>
+      <line num="153" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="154" count="8" type="stmt"/>
+      <line num="158" count="6" type="stmt"/>
+      <line num="166" count="8" type="stmt"/>
+      <line num="168" count="6" type="stmt"/>
+      <line num="172" count="6" type="stmt"/>
+      <line num="180" count="7" type="cond" truecount="4" falsecount="0"/>
+      <line num="182" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="183" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="184" count="3" type="cond" truecount="3" falsecount="1"/>
+      <line num="185" count="0" type="cond" truecount="0" falsecount="4"/>
+      <line num="188" count="3" type="stmt"/>
+      <line num="192" count="7" type="cond" truecount="2" falsecount="0"/>
+      <line num="194" count="3" type="stmt"/>
+      <line num="195" count="3" type="stmt"/>
+      <line num="196" count="6" type="stmt"/>
+      <line num="198" count="3" type="stmt"/>
+      <line num="200" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="202" count="3" type="stmt"/>
+      <line num="206" count="21" type="stmt"/>
+      <line num="207" count="21" type="stmt"/>
+      <line num="208" count="21" type="stmt"/>
+      <line num="209" count="21" type="stmt"/>
+      <line num="210" count="8" type="stmt"/>
+      <line num="211" count="8" type="stmt"/>
+      <line num="213" count="21" type="cond" truecount="2" falsecount="0"/>
+      <line num="214" count="8" type="cond" truecount="4" falsecount="0"/>
+      <line num="215" count="1" type="stmt"/>
+      <line num="220" count="7" type="stmt"/>
+      <line num="221" count="6" type="stmt"/>
+      <line num="224" count="6" type="stmt"/>
+      <line num="225" count="6" type="cond" truecount="1" falsecount="1"/>
+      <line num="226" count="6" type="stmt"/>
+      <line num="229" count="6" type="stmt"/>
+      <line num="231" count="6" type="stmt"/>
+      <line num="234" count="7" type="stmt"/>
+      <line num="239" count="14" type="stmt"/>
+      <line num="240" count="14" type="cond" truecount="1" falsecount="0"/>
+      <line num="241" count="13" type="stmt"/>
+      <line num="243" count="14" type="stmt"/>
+      <line num="244" count="14" type="stmt"/>
+      <line num="246" count="14" type="stmt"/>
+      <line num="249" count="4" type="stmt"/>
+    </file>
     <file name="exporter.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/exporter.js">
-      <metrics statements="23" coveredstatements="23" conditionals="8" coveredconditionals="8" methods="2" coveredmethods="2"/>
+      <metrics statements="28" coveredstatements="28" conditionals="8" coveredconditionals="8" methods="2" coveredmethods="2"/>
       <line num="1" count="1" type="stmt"/>
       <line num="2" count="1" type="stmt"/>
       <line num="3" count="1" type="stmt"/>
       <line num="4" count="1" type="stmt"/>
       <line num="5" count="1" type="stmt"/>
       <line num="6" count="1" type="stmt"/>
-      <line num="9" count="2" type="stmt"/>
-      <line num="10" count="2" type="cond" truecount="2" falsecount="0"/>
-      <line num="11" count="1" type="stmt"/>
-      <line num="16" count="4" type="stmt"/>
-      <line num="17" count="4" type="cond" truecount="2" falsecount="0"/>
-      <line num="18" count="1" type="stmt"/>
-      <line num="19" count="1" type="stmt"/>
-      <line num="22" count="3" type="stmt"/>
-      <line num="23" count="3" type="stmt"/>
-      <line num="24" count="3" type="stmt"/>
-      <line num="28" count="3" type="cond" truecount="4" falsecount="0"/>
-      <line num="30" count="2" type="stmt"/>
-      <line num="31" count="2" type="stmt"/>
-      <line num="32" count="1" type="stmt"/>
+      <line num="8" count="1" type="stmt"/>
+      <line num="11" count="2" type="stmt"/>
+      <line num="12" count="2" type="stmt"/>
+      <line num="13" count="2" type="stmt"/>
+      <line num="14" count="2" type="stmt"/>
+      <line num="22" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="23" count="1" type="stmt"/>
+      <line num="26" count="2" type="stmt"/>
+      <line num="31" count="4" type="stmt"/>
+      <line num="32" count="4" type="cond" truecount="2" falsecount="0"/>
       <line num="33" count="1" type="stmt"/>
-      <line num="39" count="1" type="stmt"/>
-      <line num="43" count="1" type="stmt"/>
+      <line num="34" count="1" type="stmt"/>
+      <line num="37" count="3" type="stmt"/>
+      <line num="38" count="3" type="stmt"/>
+      <line num="39" count="3" type="stmt"/>
+      <line num="43" count="3" type="cond" truecount="4" falsecount="0"/>
+      <line num="45" count="2" type="stmt"/>
+      <line num="46" count="2" type="stmt"/>
+      <line num="47" count="1" type="stmt"/>
+      <line num="48" count="1" type="stmt"/>
+      <line num="54" count="1" type="stmt"/>
+      <line num="58" count="1" type="stmt"/>
     </file>
     <file name="fileDialog.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/fileDialog.js">
       <metrics statements="11" coveredstatements="11" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
@@ -88,6 +198,224 @@
       <line num="57" count="1" type="stmt"/>
       <line num="61" count="1" type="stmt"/>
     </file>
+    <file name="footnotes.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/footnotes.js">
+      <metrics statements="183" coveredstatements="179" conditionals="97" coveredconditionals="75" methods="32" coveredmethods="29"/>
+      <line num="1" count="3" type="stmt"/>
+      <line num="3" count="3" type="stmt"/>
+      <line num="75" count="37" type="stmt"/>
+      <line num="76" count="37" type="stmt"/>
+      <line num="77" count="37" type="cond" truecount="1" falsecount="1"/>
+      <line num="78" count="37" type="cond" truecount="2" falsecount="0"/>
+      <line num="79" count="37" type="cond" truecount="1" falsecount="1"/>
+      <line num="80" count="37" type="cond" truecount="2" falsecount="0"/>
+      <line num="81" count="37" type="stmt"/>
+      <line num="85" count="8" type="stmt"/>
+      <line num="87" count="8" type="stmt"/>
+      <line num="88" count="8" type="stmt"/>
+      <line num="89" count="8" type="stmt"/>
+      <line num="90" count="8" type="stmt"/>
+      <line num="91" count="8" type="stmt"/>
+      <line num="93" count="8" type="stmt"/>
+      <line num="94" count="9" type="stmt"/>
+      <line num="95" count="9" type="stmt"/>
+      <line num="96" count="9" type="cond" truecount="1" falsecount="1"/>
+      <line num="97" count="9" type="stmt"/>
+      <line num="100" count="9" type="stmt"/>
+      <line num="101" count="9" type="stmt"/>
+      <line num="102" count="0" type="stmt"/>
+      <line num="104" count="9" type="stmt"/>
+      <line num="106" count="9" type="cond" truecount="1" falsecount="1"/>
+      <line num="107" count="0" type="stmt"/>
+      <line num="109" count="9" type="stmt"/>
+      <line num="113" count="8" type="stmt"/>
+      <line num="114" count="126" type="cond" truecount="5" falsecount="0"/>
+      <line num="115" count="7" type="stmt"/>
+      <line num="116" count="7" type="stmt"/>
+      <line num="119" count="119" type="cond" truecount="2" falsecount="0"/>
+      <line num="120" count="9" type="stmt"/>
+      <line num="121" count="9" type="stmt"/>
+      <line num="122" count="9" type="stmt"/>
+      <line num="123" count="9" type="stmt"/>
+      <line num="124" count="9" type="stmt"/>
+      <line num="127" count="110" type="cond" truecount="2" falsecount="0"/>
+      <line num="128" count="9" type="stmt"/>
+      <line num="129" count="9" type="stmt"/>
+      <line num="130" count="9" type="stmt"/>
+      <line num="133" count="101" type="cond" truecount="2" falsecount="0"/>
+      <line num="134" count="27" type="stmt"/>
+      <line num="135" count="27" type="stmt"/>
+      <line num="138" count="74" type="stmt"/>
+      <line num="141" count="8" type="stmt"/>
+      <line num="145" count="8" type="stmt"/>
+      <line num="154" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="156" count="8" type="stmt"/>
+      <line num="157" count="8" type="stmt"/>
+      <line num="158" count="8" type="stmt"/>
+      <line num="159" count="8" type="stmt"/>
+      <line num="163" count="15" type="stmt"/>
+      <line num="164" count="9" type="stmt"/>
+      <line num="166" count="15" type="stmt"/>
+      <line num="167" count="15" type="stmt"/>
+      <line num="169" count="15" type="stmt"/>
+      <line num="170" count="106" type="cond" truecount="4" falsecount="0"/>
+      <line num="171" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="176" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="177" count="7" type="stmt"/>
+      <line num="178" count="7" type="cond" truecount="1" falsecount="1"/>
+      <line num="180" count="7" type="stmt"/>
+      <line num="181" count="7" type="stmt"/>
+      <line num="182" count="7" type="stmt"/>
+      <line num="184" count="1" type="stmt"/>
+      <line num="185" count="1" type="stmt"/>
+      <line num="186" count="1" type="cond" truecount="1" falsecount="1"/>
+      <line num="189" count="8" type="stmt"/>
+      <line num="190" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="191" count="8" type="stmt"/>
+      <line num="193" count="8" type="stmt"/>
+      <line num="194" count="8" type="stmt"/>
+      <line num="195" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="198" count="15" type="stmt"/>
+      <line num="202" count="17" type="cond" truecount="1" falsecount="1"/>
+      <line num="203" count="17" type="cond" truecount="2" falsecount="0"/>
+      <line num="204" count="16" type="cond" truecount="2" falsecount="2"/>
+      <line num="205" count="0" type="stmt"/>
+      <line num="209" count="93" type="stmt"/>
+      <line num="210" count="241" type="stmt"/>
+      <line num="211" count="241" type="cond" truecount="2" falsecount="0"/>
+      <line num="216" count="15" type="stmt"/>
+      <line num="217" count="15" type="stmt"/>
+      <line num="219" count="15" type="stmt"/>
+      <line num="220" count="135" type="cond" truecount="4" falsecount="0"/>
+      <line num="221" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="223" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="224" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="225" count="8" type="stmt"/>
+      <line num="229" count="8" type="stmt"/>
+      <line num="232" count="8" type="stmt"/>
+      <line num="233" count="8" type="stmt"/>
+      <line num="236" count="15" type="stmt"/>
+      <line num="238" count="15" type="stmt"/>
+      <line num="239" count="8" type="stmt"/>
+      <line num="240" count="8" type="stmt"/>
+      <line num="242" count="8" type="stmt"/>
+      <line num="245" count="15" type="stmt"/>
+      <line num="249" count="1" type="stmt"/>
+      <line num="250" count="1" type="stmt"/>
+      <line num="252" count="1" type="stmt"/>
+      <line num="253" count="1" type="stmt"/>
+      <line num="254" count="1" type="stmt"/>
+      <line num="256" count="1" type="stmt"/>
+      <line num="257" count="1" type="stmt"/>
+      <line num="259" count="1" type="stmt"/>
+      <line num="271" count="8" type="stmt"/>
+      <line num="272" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="274" count="8" type="stmt"/>
+      <line num="275" count="8" type="stmt"/>
+      <line num="276" count="8" type="stmt"/>
+      <line num="278" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="282" count="8" type="stmt"/>
+      <line num="284" count="8" type="stmt"/>
+      <line num="285" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="286" count="8" type="stmt"/>
+      <line num="289" count="8" type="stmt"/>
+      <line num="290" count="0" type="stmt"/>
+      <line num="292" count="8" type="stmt"/>
+      <line num="293" count="8" type="stmt"/>
+      <line num="294" count="8" type="stmt"/>
+      <line num="297" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="298" count="8" type="stmt"/>
+      <line num="302" count="2" type="stmt"/>
+      <line num="305" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="307" count="2" type="stmt"/>
+      <line num="308" count="2" type="stmt"/>
+      <line num="309" count="2" type="stmt"/>
+      <line num="310" count="2" type="stmt"/>
+      <line num="311" count="2" type="stmt"/>
+      <line num="321" count="10" type="stmt"/>
+      <line num="323" count="10" type="stmt"/>
+      <line num="324" count="8" type="stmt"/>
+      <line num="327" count="10" type="stmt"/>
+      <line num="328" count="2" type="stmt"/>
+      <line num="331" count="10" type="stmt"/>
+      <line num="332" count="10" type="stmt"/>
+      <line num="343" count="15" type="stmt"/>
+      <line num="345" count="15" type="stmt"/>
+      <line num="350" count="15" type="stmt"/>
+      <line num="355" count="15" type="stmt"/>
+      <line num="356" count="9" type="stmt"/>
+      <line num="357" count="2" type="stmt"/>
+      <line num="358" count="15" type="cond" truecount="4" falsecount="0"/>
+      <line num="360" count="10" type="stmt"/>
+      <line num="372" count="13" type="cond" truecount="2" falsecount="0"/>
+      <line num="374" count="8" type="stmt"/>
+      <line num="375" count="8" type="stmt"/>
+      <line num="380" count="8" type="stmt"/>
+      <line num="381" count="8" type="stmt"/>
+      <line num="382" count="8" type="stmt"/>
+      <line num="384" count="8" type="stmt"/>
+      <line num="385" count="81" type="cond" truecount="4" falsecount="0"/>
+      <line num="386" count="7" type="stmt"/>
+      <line num="394" count="7" type="stmt"/>
+      <line num="395" count="7" type="stmt"/>
+      <line num="396" count="7" type="stmt"/>
+      <line num="398" count="74" type="stmt"/>
+      <line num="402" count="8" type="stmt"/>
+      <line num="410" count="8" type="stmt"/>
+      <line num="414" count="14" type="stmt"/>
+      <line num="416" count="14" type="stmt"/>
+      <line num="417" count="14" type="stmt"/>
+      <line num="423" count="14" type="stmt"/>
+      <line num="424" count="10" type="cond" truecount="1" falsecount="1"/>
+      <line num="428" count="10" type="stmt"/>
+      <line num="430" count="14" type="stmt"/>
+      <line num="431" count="14" type="stmt"/>
+      <line num="432" count="14" type="stmt"/>
+      <line num="439" count="10" type="cond" truecount="2" falsecount="0"/>
+      <line num="440" count="2" type="stmt"/>
+      <line num="443" count="8" type="stmt"/>
+      <line num="445" count="14" type="stmt"/>
+      <line num="446" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="448" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="450" count="8" type="stmt"/>
+      <line num="451" count="8" type="cond" truecount="1" falsecount="1"/>
+      <line num="453" count="8" type="stmt"/>
+      <line num="456" count="14" type="stmt"/>
+      <line num="457" count="14" type="stmt"/>
+      <line num="459" count="14" type="stmt"/>
+      <line num="462" count="3" type="stmt"/>
+    </file>
+    <file name="localImagePaths.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/localImagePaths.js">
+      <metrics statements="29" coveredstatements="27" conditionals="26" coveredconditionals="21" methods="5" coveredmethods="5"/>
+      <line num="1" count="4" type="stmt"/>
+      <line num="2" count="4" type="stmt"/>
+      <line num="4" count="4" type="stmt"/>
+      <line num="7" count="3" type="stmt"/>
+      <line num="8" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="9" count="0" type="stmt"/>
+      <line num="13" count="5" type="cond" truecount="1" falsecount="1"/>
+      <line num="15" count="5" type="stmt"/>
+      <line num="23" count="5" type="cond" truecount="5" falsecount="0"/>
+      <line num="25" count="3" type="stmt"/>
+      <line num="26" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="28" count="3" type="stmt"/>
+      <line num="29" count="3" type="stmt"/>
+      <line num="30" count="3" type="stmt"/>
+      <line num="32" count="0" type="stmt"/>
+      <line num="35" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="39" count="3" type="stmt"/>
+      <line num="43" count="14" type="stmt"/>
+      <line num="47" count="44" type="cond" truecount="2" falsecount="0"/>
+      <line num="48" count="44" type="cond" truecount="2" falsecount="0"/>
+      <line num="50" count="4" type="stmt"/>
+      <line num="51" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="53" count="2" type="stmt"/>
+      <line num="54" count="2" type="stmt"/>
+      <line num="55" count="2" type="stmt"/>
+      <line num="57" count="2" type="cond" truecount="3" falsecount="1"/>
+      <line num="58" count="2" type="stmt"/>
+      <line num="64" count="14" type="stmt"/>
+      <line num="67" count="4" type="stmt"/>
+    </file>
     <file name="mainWindow.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/mainWindow.js">
       <metrics statements="13" coveredstatements="13" conditionals="2" coveredconditionals="1" methods="3" coveredmethods="3"/>
       <line num="1" count="1" type="stmt"/>
@@ -105,26 +433,58 @@
       <line num="30" count="1" type="stmt"/>
     </file>
     <file name="markdownRenderer.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/markdownRenderer.js">
-      <metrics statements="16" coveredstatements="16" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+      <metrics statements="18" coveredstatements="18" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
       <line num="1" count="1" type="stmt"/>
       <line num="2" count="1" type="stmt"/>
       <line num="3" count="1" type="stmt"/>
       <line num="4" count="1" type="stmt"/>
       <line num="5" count="1" type="stmt"/>
+      <line num="6" count="1" type="stmt"/>
       <line num="7" count="1" type="stmt"/>
-      <line num="10" count="3" type="stmt"/>
-      <line num="11" count="3" type="stmt"/>
-      <line num="12" count="2" type="stmt"/>
-      <line num="13" count="2" type="stmt"/>
-      <line num="14" count="2" type="cond" truecount="4" falsecount="0"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="12" count="3" type="stmt"/>
+      <line num="13" count="3" type="stmt"/>
+      <line num="14" count="2" type="stmt"/>
+      <line num="18" count="2" type="stmt"/>
+      <line num="19" count="2" type="cond" truecount="4" falsecount="0"/>
+      <line num="20" count="1" type="stmt"/>
+      <line num="21" count="1" type="stmt"/>
+      <line num="23" count="1" type="stmt"/>
+      <line num="28" count="1" type="stmt"/>
+      <line num="35" count="1" type="stmt"/>
+    </file>
+    <file name="marp.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/marp.js">
+      <metrics statements="12" coveredstatements="12" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      <line num="1" count="3" type="stmt"/>
+      <line num="2" count="3" type="stmt"/>
+      <line num="3" count="3" type="stmt"/>
+      <line num="4" count="3" type="stmt"/>
+      <line num="5" count="3" type="stmt"/>
+      <line num="8" count="13" type="stmt"/>
+      <line num="9" count="13" type="stmt"/>
+      <line num="10" count="13" type="stmt"/>
+      <line num="11" count="13" type="stmt"/>
+      <line num="12" count="13" type="stmt"/>
+      <line num="13" count="13" type="stmt"/>
+      <line num="16" count="3" type="stmt"/>
+    </file>
+    <file name="marpEngine.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/marpEngine.js">
+      <metrics statements="12" coveredstatements="12" conditionals="3" coveredconditionals="2" methods="1" coveredmethods="1"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="8" count="1" type="cond" truecount="2" falsecount="0"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="11" count="1" type="stmt"/>
+      <line num="12" count="1" type="stmt"/>
       <line num="15" count="1" type="stmt"/>
       <line num="16" count="1" type="stmt"/>
-      <line num="18" count="1" type="stmt"/>
-      <line num="23" count="1" type="stmt"/>
-      <line num="30" count="1" type="stmt"/>
     </file>
     <file name="menu.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/menu.js">
-      <metrics statements="15" coveredstatements="15" conditionals="7" coveredconditionals="5" methods="11" coveredmethods="9"/>
+      <metrics statements="15" coveredstatements="15" conditionals="8" coveredconditionals="6" methods="11" coveredmethods="9"/>
       <line num="1" count="1" type="stmt"/>
       <line num="2" count="1" type="stmt"/>
       <line num="9" count="2" type="cond" truecount="4" falsecount="0"/>
@@ -133,13 +493,21 @@
       <line num="27" count="1" type="stmt"/>
       <line num="31" count="1" type="stmt"/>
       <line num="37" count="1" type="stmt"/>
-      <line num="52" count="2" type="stmt"/>
-      <line num="60" count="1" type="stmt"/>
-      <line num="77" count="1" type="stmt"/>
-      <line num="83" count="1" type="stmt"/>
-      <line num="102" count="1" type="stmt"/>
-      <line num="111" count="2" type="stmt"/>
-      <line num="114" count="1" type="stmt"/>
+      <line num="53" count="2" type="stmt"/>
+      <line num="61" count="1" type="stmt"/>
+      <line num="78" count="1" type="stmt"/>
+      <line num="84" count="1" type="stmt"/>
+      <line num="103" count="1" type="stmt"/>
+      <line num="112" count="2" type="stmt"/>
+      <line num="115" count="1" type="stmt"/>
+    </file>
+    <file name="pagination.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/pagination.js">
+      <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+      <line num="1" count="3" type="stmt"/>
+      <line num="8" count="14" type="stmt"/>
+      <line num="9" count="14" type="stmt"/>
+      <line num="11" count="14" type="stmt"/>
+      <line num="14" count="3" type="stmt"/>
     </file>
     <file name="recentFiles.js" path="/Users/kdmsnr/src/github.com/kdmsnr/marp-preview/app/recentFiles.js">
       <metrics statements="57" coveredstatements="51" conditionals="18" coveredconditionals="15" methods="14" coveredmethods="14"/>

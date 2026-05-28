@@ -80,7 +80,7 @@ describe('exporter', () => {
       '--engine',
       enginePath,
       '--allow-local-files',
-      '/tmp/deck.md',
+      'deck.md',
       '-o',
       '/tmp/output.pdf',
     ]);

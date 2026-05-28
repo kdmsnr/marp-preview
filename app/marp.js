@@ -1,10 +1,12 @@
 const { Marp } = require('@marp-team/marp-core');
+const { installCitations } = require('./citations');
 const { installFootnotes } = require('./footnotes');
 const { installLocalImagePaths } = require('./localImagePaths');
 const { installPagination } = require('./pagination');
 
 function createMarp(options = { inlineSVG: true }) {
   const marp = new Marp(options);
+  installCitations(marp);
   installFootnotes(marp);
   installLocalImagePaths(marp);
   installPagination(marp);

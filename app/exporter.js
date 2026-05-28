@@ -8,16 +8,22 @@ const { getCurrentFilePath, getMainWindow } = require('./state');
 const enginePath = path.join(__dirname, 'marpEngine.js');
 
 async function runMarpCLI(input, output) {
-  const exitCode = await marpCli.marpCli([
-    '--engine',
-    enginePath,
-    '--allow-local-files',
-    input,
-    '-o',
-    output,
-  ]);
-  if (exitCode !== 0) {
-    throw new Error(`Marp CLI exited with code ${exitCode}`);
+  const previousCwd = process.cwd();
+  try {
+    process.chdir(path.dirname(input));
+    const exitCode = await marpCli.marpCli([
+      '--engine',
+      enginePath,
+      '--allow-local-files',
+      path.basename(input),
+      '-o',
+      path.resolve(output),
+    ]);
+    if (exitCode !== 0) {
+      throw new Error(`Marp CLI exited with code ${exitCode}`);
+    }
+  } finally {
+    process.chdir(previousCwd);
   }
 }
 

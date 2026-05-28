@@ -62,6 +62,7 @@ describe('markdownRenderer', () => {
 
     expect(mockReadFile).toHaveBeenCalledWith('/tmp/slides.md', 'utf-8');
     expect(mockRender).toHaveBeenCalledWith('# Sample', {
+      citationBasePath: '/tmp',
       localImageBasePath: '/tmp',
     });
     expect(mockMainWindow.webContents.send).toHaveBeenCalledWith(
