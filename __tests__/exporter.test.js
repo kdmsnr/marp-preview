@@ -79,6 +79,7 @@ describe('exporter', () => {
     expect(mockMarpCli).toHaveBeenCalledWith([
       '--engine',
       enginePath,
+      '--allow-local-files',
       '/tmp/deck.md',
       '-o',
       '/tmp/output.pdf',

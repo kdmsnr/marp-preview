@@ -11,6 +11,7 @@ async function runMarpCLI(input, output) {
   const exitCode = await marpCli.marpCli([
     '--engine',
     enginePath,
+    '--allow-local-files',
     input,
     '-o',
     output,
