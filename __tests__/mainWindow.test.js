@@ -3,8 +3,20 @@ const createdWindows = [];
 jest.mock('electron', () => {
   const BrowserWindow = jest.fn((options) => {
     const handlers = {};
+    const webContentsHandlers = {};
+    let windowOpenHandler;
     const window = {
       options,
+      webContents: {
+        on: jest.fn((event, callback) => {
+          webContentsHandlers[event] = callback;
+        }),
+        emit: (event, ...args) => webContentsHandlers[event]?.(...args),
+        setWindowOpenHandler: jest.fn((callback) => {
+          windowOpenHandler = callback;
+        }),
+        triggerWindowOpen: (details) => windowOpenHandler?.(details),
+      },
       loadFile: jest.fn(),
       on: jest.fn((event, callback) => {
         handlers[event] = callback;
@@ -18,7 +30,12 @@ jest.mock('electron', () => {
   BrowserWindow.__getLastWindow = () =>
     createdWindows[createdWindows.length - 1];
 
-  return { BrowserWindow };
+  return {
+    BrowserWindow,
+    shell: {
+      openExternal: jest.fn(() => Promise.resolve()),
+    },
+  };
 });
 
 jest.mock('../app/state', () => ({
@@ -60,6 +77,52 @@ describe('mainWindow', () => {
     lastWindow.emit('closed');
     expect(state.clearMainWindow).toHaveBeenCalled();
     expect(stopWatching).toHaveBeenCalled();
+  });
+
+  test('opens external top-level navigations in the default browser', () => {
+    createMainWindow();
+
+    const event = { preventDefault: jest.fn() };
+    const lastWindow = electron.BrowserWindow.__getLastWindow();
+    lastWindow.webContents.emit(
+      'will-navigate',
+      event,
+      'https://example.com/docs',
+    );
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(electron.shell.openExternal).toHaveBeenCalledWith(
+      'https://example.com/docs',
+    );
+  });
+
+  test('does not intercept internal file navigations', () => {
+    createMainWindow();
+
+    const event = { preventDefault: jest.fn() };
+    const lastWindow = electron.BrowserWindow.__getLastWindow();
+    lastWindow.webContents.emit(
+      'will-navigate',
+      event,
+      'file:///tmp/index.html#slide-2',
+    );
+
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(electron.shell.openExternal).not.toHaveBeenCalled();
+  });
+
+  test('opens target blank external links in the default browser', () => {
+    createMainWindow();
+
+    const lastWindow = electron.BrowserWindow.__getLastWindow();
+    const result = lastWindow.webContents.triggerWindowOpen({
+      url: 'mailto:author@example.com',
+    });
+
+    expect(result).toEqual({ action: 'deny' });
+    expect(electron.shell.openExternal).toHaveBeenCalledWith(
+      'mailto:author@example.com',
+    );
   });
 
   test('ensureMainWindow reuses the existing instance', () => {
