@@ -12,6 +12,12 @@ const REFERENCES_MARKER = '<!-- references -->';
 const REFERENCES_MARKER_RE = /<!--\s*references(?:\s*:\s*([1-9]\d*)?\s*-\s*([1-9]\d*)?)?\s*-->/gi;
 const CITATION_CLUSTER_RE = /\[([^\[\]]*@[\w:.#$%&\-+?<>~/]+[^\[\]]*)\]/g;
 const CITATION_KEY_RE = /^[A-Za-z0-9_:.#$%&\-+?<>~/]+$/;
+const CITATION_METADATA_FIELDS = new Set(['bibliography', 'csl']);
+const BUNDLED_CSL_LOCALES = new Map([
+  ['ja', 'locales-ja-JP.xml'],
+  ['ja-JP', 'locales-ja-JP.xml'],
+  ['ja_JP', 'locales-ja-JP.xml'],
+]);
 
 const CITATION_CSS = `
 section .citation {
@@ -26,7 +32,73 @@ section .csl-bib-body {
 section .csl-entry {
   margin-bottom: 0.35em;
 }
+
+section .csl-left-margin {
+  display: table-cell;
+  padding-right: 0.4em;
+  text-align: right;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 2.4em;
+}
+
+section .csl-right-inline {
+  display: table-cell;
+  vertical-align: top;
+}
 `.trim();
+
+function parseTopLevelField(line, rootIndent) {
+  if (line.trim() === '' || line.length < rootIndent) return null;
+  const prefix = line.slice(0, rootIndent);
+  if (!/^[ \t]*$/.test(prefix)) return null;
+
+  const content = line.slice(rootIndent);
+  if (/^[ \t]/.test(content)) return null;
+
+  const match = content.match(/^(['"]?)([A-Za-z][\w-]*)\1\s*:/);
+  return match ? match[2] : null;
+}
+
+function findRootIndent(lines) {
+  const indents = lines
+    .map((line) => {
+      const match = line.match(/^([ \t]*)(['"]?)[A-Za-z][\w-]*\2\s*:/);
+      return match ? match[1].length : null;
+    })
+    .filter((indent) => indent !== null);
+
+  return indents.length > 0 ? Math.min(...indents) : 0;
+}
+
+function trimRootIndent(line, rootIndent) {
+  if (line.trim() === '') return line;
+  const prefix = line.slice(0, rootIndent);
+  return /^[ \t]*$/.test(prefix) ? line.slice(rootIndent) : line;
+}
+
+function extractCitationMetadataYaml(source) {
+  const lines = source.replace(/\r\n?/g, '\n').split('\n');
+  const rootIndent = findRootIndent(lines);
+  const citationLines = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const field = parseTopLevelField(lines[index], rootIndent);
+    if (!CITATION_METADATA_FIELDS.has(field)) continue;
+
+    citationLines.push(trimRootIndent(lines[index], rootIndent));
+    for (index += 1; index < lines.length; index += 1) {
+      const nextField = parseTopLevelField(lines[index], rootIndent);
+      if (nextField) {
+        index -= 1;
+        break;
+      }
+      citationLines.push(trimRootIndent(lines[index], rootIndent));
+    }
+  }
+
+  return citationLines.join('\n');
+}
 
 function parseCitationMetadata(markdown) {
   const source = markdown
@@ -41,7 +113,9 @@ function parseCitationMetadata(markdown) {
   if (!htmlCommentDirectives) return {};
 
   try {
-    const metadata = yaml.load(htmlCommentDirectives[1]) || {};
+    const metadata = yaml.load(
+      extractCitationMetadataYaml(htmlCommentDirectives[1]),
+    ) || {};
     if (
       metadata &&
       typeof metadata === 'object' &&
@@ -111,11 +185,43 @@ function escapeAttribute(value) {
     .replace(/>/g, '&gt;');
 }
 
+function extractCslLocales(csl) {
+  const locales = new Set();
+  for (const match of csl.matchAll(/\b(?:default-locale|locale)=["']([^"']+)["']/g)) {
+    for (const locale of match[1].split(/\s+/)) {
+      if (locale) locales.add(locale);
+    }
+  }
+  return locales;
+}
+
+function registerBundledCslLocale(locales, locale) {
+  const fileName = BUNDLED_CSL_LOCALES.get(locale);
+  if (!fileName) return false;
+
+  const localePath = path.join(__dirname, 'csl-locales', fileName);
+  locales.add(locale, fs.readFileSync(localePath, 'utf-8'));
+  return true;
+}
+
+function ensureCslLocales(csl) {
+  const { locales } = plugins.config.get('@csl');
+
+  for (const locale of extractCslLocales(csl)) {
+    if (!locales.has(locale) && !registerBundledCslLocale(locales, locale)) {
+      throw new Error(
+        `CSL locale '${locale}' is not bundled with this app.`,
+      );
+    }
+  }
+}
+
 function createStyleTemplate(csl) {
   const templates = plugins.config.get('@csl').templates;
   const hash = crypto.createHash('sha1').update(csl).digest('hex').slice(0, 12);
   const templateName = `marp-preview-${hash}`;
 
+  ensureCslLocales(csl);
   if (!templates.has(templateName)) {
     templates.add(templateName, csl);
   }

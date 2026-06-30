@@ -13,6 +13,64 @@ const {
 const { createMarp } = require('../app/marp');
 
 const APA_CSL = plugins.config.get('@csl').templates.get('apa');
+const IEEE_CSL = `<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>Test IEEE</title>
+    <id>test-ieee</id>
+    <updated>2026-01-01T00:00:00+00:00</updated>
+  </info>
+  <citation collapse="citation-number">
+    <sort>
+      <key variable="citation-number"/>
+    </sort>
+    <layout delimiter=", " prefix="[" suffix="]">
+      <text variable="citation-number"/>
+    </layout>
+  </citation>
+  <bibliography second-field-align="flush">
+    <layout>
+      <text variable="citation-number" prefix="[" suffix="]"/>
+      <group delimiter=", ">
+        <names variable="author">
+          <name initialize-with=". "/>
+        </names>
+        <text variable="title" quotes="true"/>
+      </group>
+    </layout>
+  </bibliography>
+</style>`;
+const JA_CSL = `<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text" default-locale="ja-JP">
+  <info>
+    <title>Test Japanese Locale</title>
+    <id>test-japanese-locale</id>
+    <updated>2026-01-01T00:00:00+00:00</updated>
+  </info>
+  <citation>
+    <layout prefix="(" suffix=")">
+      <text macro="author"/>
+      <date variable="issued">
+        <date-part name="year"/>
+      </date>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout>
+      <text macro="author"/>
+      <text variable="title" prefix=". "/>
+      <text term="accessed" prefix=". "/>
+    </layout>
+  </bibliography>
+  <macro name="author">
+    <names variable="author">
+      <name/>
+      <substitute>
+        <text variable="title"/>
+      </substitute>
+    </names>
+  </macro>
+</style>`;
 const BIBTEX = `
 @book{beck2000,
   title = {Extreme Programming Explained},
@@ -35,6 +93,8 @@ function createCitationFixture() {
   fs.mkdirSync(deckDir);
   fs.writeFileSync(path.join(root, 'ref.bib'), BIBTEX);
   fs.writeFileSync(path.join(root, 'apa.csl'), APA_CSL);
+  fs.writeFileSync(path.join(root, 'ieee.csl'), IEEE_CSL);
+  fs.writeFileSync(path.join(root, 'ja.csl'), JA_CSL);
 
   return { deckDir, root };
 }
@@ -124,6 +184,75 @@ describe('citations', () => {
 
     expect(rendered).toContain('(Beck, 2000)');
     expect(rendered).toContain('Extreme Programming Explained');
+  });
+
+  test('ignores invalid YAML in non-citation front matter fields', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'title: Test: subtitle',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      'Kent Beck wrote about XP [@beck2000].',
+      '',
+      '<!-- references -->',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain('(Beck, 2000)');
+    expect(rendered).toContain('Extreme Programming Explained');
+  });
+
+  test('styles second-field bibliography output on one line', () => {
+    fixture = createCitationFixture();
+    const marp = createMarp();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../ieee.csl',
+      '---',
+      '',
+      'Kent Beck wrote about XP [@beck2000].',
+      '',
+      '# References',
+      '',
+      '<!-- references -->',
+    ].join('\n');
+
+    const { css, html } = marp.render(markdown, {
+      citationBasePath: fixture.deckDir,
+    });
+
+    expect(html).toContain('class="csl-left-margin">[1]</div>');
+    expect(html).toContain('class="csl-right-inline"');
+    expect(css).toContain('section .csl-left-margin');
+    expect(css).toContain('display: table-cell');
+    expect(css).toContain('section .csl-right-inline');
+  });
+
+  test('renders CSL styles that request the bundled Japanese locale', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../ja.csl',
+      '---',
+      '',
+      'Kent Beck wrote about XP [@beck2000].',
+      '',
+      '# References',
+      '',
+      '<!-- references -->',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain('Kent Beck');
+    expect(rendered).toContain('Extreme Programming Explained');
+    expect(rendered).toContain('参照');
   });
 
   test('renders split references with explicit ranges', () => {
