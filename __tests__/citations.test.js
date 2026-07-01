@@ -139,6 +139,39 @@ describe('citations', () => {
     expect(rendered).not.toContain('<!-- references -->');
   });
 
+  test('renders bibliography URLs as hyperlinks', () => {
+    fixture = createCitationFixture();
+    fs.writeFileSync(
+      path.join(fixture.root, 'web.bib'),
+      `
+@misc{site2024,
+  author = {Doe, Jane},
+  title = {Example Site},
+  year = {2024},
+  url = {https://example.com}
+}
+`.trim(),
+    );
+    const markdown = [
+      '---',
+      'bibliography: ../web.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      'Jane Doe published a website [@site2024].',
+      '',
+      '# References',
+      '',
+      '<!-- references -->',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain(
+      '<a href="https://example.com">https://example.com</a>',
+    );
+  });
+
   test('reads citation metadata from Marp HTML comment directives', () => {
     fixture = createCitationFixture();
     const markdown = [

@@ -278,6 +278,7 @@ function renderBibliography(citationContext) {
   return citationContext.cite.format('bibliography', {
     entry: citationContext.citedIds,
     format: 'html',
+    hyperlinks: true,
     template: citationContext.template,
   });
 }
