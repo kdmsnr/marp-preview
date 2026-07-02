@@ -448,7 +448,6 @@ function installFootnotes(marp) {
       typeof meta.number === 'number' ? meta.number + 1 : meta.id + 1;
 
     number = number.toString();
-    if (meta.subId > 0) number += `:${meta.subId}`;
 
     return `[${number}]`;
   };

@@ -116,6 +116,24 @@ describe('createMarp', () => {
     expect(html[1]).not.toContain('[1:1]');
   });
 
+  test('uses the same visible number for repeated references to one footnote', () => {
+    const marp = createMarp();
+    const markdown = [
+      'First[^id] second[^id] third[^id]',
+      '',
+      '[^id]: Reused note.',
+    ].join('\n');
+
+    const { html } = marp.render(markdown);
+
+    expect(html).toContain('id="fnref1">[1]</a>');
+    expect(html).toContain('id="fnref1:1">[1]</a>');
+    expect(html).toContain('id="fnref1:2">[1]</a>');
+    expect(html).not.toContain('[1:1]');
+    expect(html).not.toContain('[1:2]');
+    expect(html.match(/<li id="fn1" class="footnote-item">/g)).toHaveLength(1);
+  });
+
   test('renders unreferenced footnote definitions as plain page notes', () => {
     const marp = createMarp();
     const { html } = marp.render('## Footnote only\n\n[^id]: note');
