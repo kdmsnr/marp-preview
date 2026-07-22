@@ -10,6 +10,7 @@ const { createApplicationMenu } = require('./app/menu');
 const { openFile } = require('./app/fileDialog');
 const { loadFile } = require('./app/fileLoader');
 const { exportFile } = require('./app/exporter');
+const { pasteClipboardImage } = require('./app/clipboardImage');
 const { setAlwaysOnTop } = require('./app/windowActions');
 const {
   clearRecentFiles,
@@ -36,6 +37,7 @@ app.whenReady().then(() => {
   const buildMenu = (recentFiles) =>
     createApplicationMenu({
       openFile,
+      pasteImage: pasteClipboardImage,
       exportPdf: () => exportFile('pdf'),
       exportPptx: () => exportFile('pptx'),
       toggleAlwaysOnTop: setAlwaysOnTop,

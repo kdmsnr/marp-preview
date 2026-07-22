@@ -39,6 +39,7 @@ jest.mock('electron', () => {
 });
 
 jest.mock('../app/state', () => ({
+  clearCurrentFilePath: jest.fn(),
   clearMainWindow: jest.fn(),
   getMainWindow: jest.fn(),
   setMainWindow: jest.fn(),
@@ -75,6 +76,7 @@ describe('mainWindow', () => {
     expect(window.loadFile).toHaveBeenCalled();
     const lastWindow = electron.BrowserWindow.__getLastWindow();
     lastWindow.emit('closed');
+    expect(state.clearCurrentFilePath).toHaveBeenCalled();
     expect(state.clearMainWindow).toHaveBeenCalled();
     expect(stopWatching).toHaveBeenCalled();
   });

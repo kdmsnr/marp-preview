@@ -10,6 +10,7 @@
 - **BibTeX/CSL引用**: `bibliography` と `csl` を指定し、`[@key]` 形式の引用と参考文献リストを表示できます。
 - **シンプルなUI**: `CmdOrCtrl+O` またはメニューの `File > Open File` からファイルを選択するだけの簡単操作です。
 - **PDF/PPTXエクスポート**: 開いているMarp MarkdownファイルをPDFまたはPPTX形式でエクスポートできます。メニューの `File > Export` から選択してください。
+- **クリップボード画像の保存**: 画像をコピーして `CmdOrCtrl+V` を押すと、Markdownファイルと同じ階層の `images` ディレクトリにPNGとして保存し、画像を参照するMarkdown記法をクリップボードにコピーします。
 - **常に前面表示**: 他のウィンドウの上にアプリケーションを常に表示します。メニューの `View > Always On Top` またはショートカットキー `CmdOrCtrl+T` で切り替えられます。
 
 ## 🛠️ 使い方
@@ -88,6 +89,16 @@ Kent Beck は XP を体系化した [@beck2000]。
 
 <!-- references: 9- -->
 ```
+
+### クリップボード画像の保存
+
+Markdownファイルを開いた状態で画像をクリップボードにコピーし、`CmdOrCtrl+V` を押すか、`Edit > Paste Image and Copy Markdown` を選択します。画像はMarkdownファイルと同じ階層の `images` ディレクトリに `image-YYYYMMDD-HHmmss.png` として保存され、次のようなMarkdown記法がクリップボードに入ります。
+
+```markdown
+![image](images/image-20260722-090507.png)
+```
+
+Markdownファイルを開いていない場合や、クリップボードに画像がない場合はエラーを表示し、ファイルやクリップボードは変更しません。ウィンドウを閉じると開いていたMarkdownファイルの状態はリセットされます。
 
 ## 📦 ビルド
 

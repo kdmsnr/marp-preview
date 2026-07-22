@@ -26,9 +26,14 @@ const setCurrentFilePath = (filePath) => {
   currentFilePath = filePath;
 };
 
+const clearCurrentFilePath = () => {
+  currentFilePath = null;
+};
+
 const getCurrentFilePath = () => currentFilePath;
 
 module.exports = {
+  clearCurrentFilePath,
   clearMainWindow,
   clearWatcher,
   getCurrentFilePath,

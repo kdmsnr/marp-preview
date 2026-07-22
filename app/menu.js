@@ -42,6 +42,7 @@ function buildRecentFilesSubmenu(
 
 function createApplicationMenu({
   openFile,
+  pasteImage = () => {},
   exportPdf,
   exportPptx,
   toggleAlwaysOnTop,
@@ -88,6 +89,18 @@ function createApplicationMenu({
         },
         {
           role: 'quit',
+        },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'Paste Image and Copy Markdown',
+          accelerator: 'CmdOrCtrl+V',
+          click() {
+            pasteImage();
+          },
         },
       ],
     },

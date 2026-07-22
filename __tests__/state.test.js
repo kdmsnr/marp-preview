@@ -25,5 +25,7 @@ describe('state module', () => {
   test('tracks the current file path', () => {
     state.setCurrentFilePath('/tmp/test.md');
     expect(state.getCurrentFilePath()).toBe('/tmp/test.md');
+    state.clearCurrentFilePath();
+    expect(state.getCurrentFilePath()).toBeNull();
   });
 });

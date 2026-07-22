@@ -16,6 +16,7 @@ describe('menu', () => {
   test('builds a menu with empty recent files', () => {
     const handlers = {
       openFile: jest.fn(),
+      pasteImage: jest.fn(),
       exportPdf: jest.fn(),
       exportPptx: jest.fn(),
       toggleAlwaysOnTop: jest.fn(),
@@ -29,13 +30,12 @@ describe('menu', () => {
     });
 
     const template = mockBuildFromTemplate.mock.calls[0][0];
-    const recentSubmenu =
-      template[0].submenu[1].submenu;
+    const recentSubmenu = template[0].submenu[1].submenu;
     expect(recentSubmenu[0]).toMatchObject({
       label: 'No recent files',
       enabled: false,
     });
-    const alwaysOnTop = template[1].submenu[0];
+    const alwaysOnTop = template[2].submenu[0];
     expect(alwaysOnTop.checked).toBe(true);
     alwaysOnTop.click({ checked: true });
     expect(handlers.toggleAlwaysOnTop).toHaveBeenCalledWith(true);
@@ -47,9 +47,11 @@ describe('menu', () => {
     const exportPdf = jest.fn();
     const exportPptx = jest.fn();
     const openFile = jest.fn();
+    const pasteImage = jest.fn();
 
     createApplicationMenu({
       openFile,
+      pasteImage,
       exportPdf,
       exportPptx,
       toggleAlwaysOnTop: jest.fn(),
@@ -75,5 +77,10 @@ describe('menu', () => {
     exportMenu[1].click();
     expect(exportPdf).toHaveBeenCalled();
     expect(exportPptx).toHaveBeenCalled();
+
+    const pasteImageItem = template[1].submenu[0];
+    expect(pasteImageItem.accelerator).toBe('CmdOrCtrl+V');
+    pasteImageItem.click();
+    expect(pasteImage).toHaveBeenCalled();
   });
 });

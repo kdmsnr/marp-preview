@@ -1,7 +1,12 @@
 const { BrowserWindow, shell } = require('electron');
 const path = require('path');
 const { URL } = require('url');
-const { clearMainWindow, getMainWindow, setMainWindow } = require('./state');
+const {
+  clearCurrentFilePath,
+  clearMainWindow,
+  getMainWindow,
+  setMainWindow,
+} = require('./state');
 const { stopWatching } = require('./fileWatcher');
 
 const EXTERNAL_URL_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
@@ -53,6 +58,7 @@ function createMainWindow() {
   window.loadFile(path.join(__dirname, '..', 'index.html'));
 
   window.on('closed', () => {
+    clearCurrentFilePath();
     clearMainWindow();
     stopWatching();
   });
