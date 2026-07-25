@@ -103,12 +103,12 @@ Kent Beck は XP を体系化した [@beck2000]。
 - `csl`: CSLファイルへのパスです。必須です。
 - `[@key]`: BibTeXのcitation keyを使った引用です。
 - `[@key1; @key2]`: 複数文献の引用です。
-- `<!-- @references -->`: 参考文献リストの挿入位置です。引用を使う場合は必須です。
+- `<!-- @references -->`: 参考文献リストの挿入位置です。省略した場合、本文中の引用だけを表示します。
 - `<!-- @references: 1-8 -->`: 参考文献リストの1件目から8件目だけを表示します。
 - `<!-- @references: 9- -->`: 参考文献リストの9件目以降を表示します。
 - `<!-- @references: -8 -->`: 参考文献リストの1件目から8件目を表示します。
 
-たとえば、Markdownファイルが `slides/talk.md` にある場合、`bibliography: ../ref.bib` は `ref.bib` を参照します。`bibliography`、`csl`、または `<!-- @references -->` が不足している場合、引用のレンダリングはエラーになります。
+たとえば、Markdownファイルが `slides/talk.md` にある場合、`bibliography: ../ref.bib` は `ref.bib` を参照します。引用を使う場合、`bibliography` と `csl` は必須です。`<!-- @references -->` は任意で、書いた位置にだけ参考文献リストを挿入します。
 
 参考文献が1スライドに収まらない場合は、範囲指定付きの `<!-- @references: ... -->` を複数のスライドに配置してください。見出しは通常のMarkdownとして自由に書けます。
 

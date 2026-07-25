@@ -319,11 +319,6 @@ function processCitations(markdown, options = {}) {
     .filter((match) => match.items);
 
   if (parsedMatches.length === 0) return markdown;
-  if (parsedMatches.length > 0 && !hasReferenceMarker) {
-    throw new Error(
-      `Citation references marker '${REFERENCES_MARKER}' is required.`,
-    );
-  }
 
   const citationContext = createCitationContext(markdown, options.basePath);
   const renderedMarkdown = markdown.replace(
@@ -334,6 +329,8 @@ function processCitations(markdown, options = {}) {
       return renderCitation(citationContext, items);
     },
   );
+  if (!hasReferenceMarker) return renderedMarkdown;
+
   const bibliography = renderBibliography(citationContext);
 
   return renderedMarkdown.replace(

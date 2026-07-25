@@ -342,7 +342,7 @@ describe('citations', () => {
     expect(rendered).not.toContain('<i>Refactoring</i>');
   });
 
-  test('throws when a citation has no references marker', () => {
+  test('renders citations without requiring a references marker', () => {
     fixture = createCitationFixture();
     const markdown = [
       '---',
@@ -353,12 +353,16 @@ describe('citations', () => {
       'Kent Beck wrote about XP [@beck2000].',
     ].join('\n');
 
-    expect(() =>
-      processCitations(markdown, { basePath: fixture.deckDir }),
-    ).toThrow("Citation references marker '<!-- @references -->' is required.");
+    const rendered = processCitations(markdown, {
+      basePath: fixture.deckDir,
+    });
+
+    expect(rendered).toContain('<span class="citation"');
+    expect(rendered).toContain('(Beck, 2000)');
+    expect(rendered).not.toContain('class="csl-bib-body"');
   });
 
-  test('rejects the old references marker syntax', () => {
+  test('does not treat the old references syntax as a bibliography marker', () => {
     fixture = createCitationFixture();
     const markdown = [
       '---',
@@ -371,9 +375,13 @@ describe('citations', () => {
       '<!-- references -->',
     ].join('\n');
 
-    expect(() =>
-      processCitations(markdown, { basePath: fixture.deckDir }),
-    ).toThrow("Citation references marker '<!-- @references -->' is required.");
+    const rendered = processCitations(markdown, {
+      basePath: fixture.deckDir,
+    });
+
+    expect(rendered).toContain('(Beck, 2000)');
+    expect(rendered).toContain('<!-- references -->');
+    expect(rendered).not.toContain('class="csl-bib-body"');
   });
 
   test('leaves a references marker alone when there are no citations', () => {
