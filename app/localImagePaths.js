@@ -39,6 +39,25 @@ function resolveLocalImageUrl(src, basePath) {
   return `${pathToFileURL(filePath).href}${suffix}`;
 }
 
+function resolveHtmlImageUrls(html, basePath) {
+  if (!html || !basePath) return html;
+
+  return html.replace(/<img\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi, (imageTag) =>
+    imageTag.replace(
+      /(\s+src\s*=\s*)(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i,
+      (attribute, prefix, doubleQuoted, singleQuoted, unquoted) => {
+        const src = doubleQuoted ?? singleQuoted ?? unquoted;
+        const resolvedSrc = resolveLocalImageUrl(src, basePath);
+
+        if (resolvedSrc === src) return attribute;
+        if (doubleQuoted !== undefined) return `${prefix}"${resolvedSrc}"`;
+        if (singleQuoted !== undefined) return `${prefix}'${resolvedSrc}'`;
+        return `${prefix}${resolvedSrc}`;
+      },
+    ),
+  );
+}
+
 function installLocalImagePaths(marp) {
   marp.markdown.inline.ruler2.after(
     'marpit_parse_image',
@@ -61,11 +80,22 @@ function installLocalImagePaths(marp) {
     },
   );
 
+  for (const tokenType of ['html_block', 'html_inline']) {
+    const renderHtml = marp.markdown.renderer.rules[tokenType];
+    marp.markdown.renderer.rules[tokenType] = (...args) => {
+      const env = args[3];
+      const html = renderHtml ? renderHtml(...args) : args[0][args[1]].content;
+
+      return resolveHtmlImageUrls(html, env && env[LOCAL_IMAGE_BASE_PATH]);
+    };
+  }
+
   return marp;
 }
 
 module.exports = {
   LOCAL_IMAGE_BASE_PATH,
   installLocalImagePaths,
+  resolveHtmlImageUrls,
   resolveLocalImageUrl,
 };
