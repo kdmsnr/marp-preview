@@ -1,8 +1,10 @@
 const fs = require('fs');
 const fsPromises = fs.promises;
+const { randomUUID } = require('crypto');
 const path = require('path');
 const { dialog } = require('electron');
 const marpCli = require('@marp-team/marp-cli');
+const { loadDeck } = require('./deckLoader');
 const { getCurrentFilePath, getMainWindow } = require('./state');
 
 const enginePath = path.join(__dirname, 'marpEngine.js');
@@ -27,6 +29,24 @@ async function runMarpCLI(input, output) {
   }
 }
 
+async function prepareExportInput(input) {
+  const deck = await loadDeck(input);
+  if (deck.dependencies.length === 1) {
+    return { inputPath: input, temporary: false };
+  }
+
+  const inputPath = path.join(
+    path.dirname(input),
+    `.marp-preview-${randomUUID()}.md`,
+  );
+  await fsPromises.writeFile(inputPath, deck.markdown, {
+    encoding: 'utf-8',
+    flag: 'wx',
+  });
+
+  return { inputPath, temporary: true };
+}
+
 async function exportFile(format) {
   const currentFilePath = getCurrentFilePath();
   if (!currentFilePath) {
@@ -42,8 +62,10 @@ async function exportFile(format) {
   });
   if (canceled || !filePath) return;
 
+  let preparedInput;
   try {
-    await runMarpCLI(currentFilePath, filePath);
+    preparedInput = await prepareExportInput(currentFilePath);
+    await runMarpCLI(preparedInput.inputPath, filePath);
     await fsPromises.access(filePath, fs.constants.R_OK);
     dialog.showMessageBox(mainWindow, {
       type: 'info',
@@ -52,6 +74,10 @@ async function exportFile(format) {
     });
   } catch (e) {
     dialog.showErrorBox('Export Failed', e.message);
+  } finally {
+    if (preparedInput?.temporary) {
+      await fsPromises.unlink(preparedInput.inputPath).catch(() => {});
+    }
   }
 }
 

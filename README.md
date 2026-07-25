@@ -41,6 +41,40 @@ npm start
 
 アプリケーションが起動したら、メニューの `File > Open File` またはショートカットキー `CmdOrCtrl+O` を使って、プレビューしたいMarkdownファイルを選択してください。
 
+### プレゼンテーションを複数ファイルに分割する
+
+`<!-- @include: ファイル名.md -->` を使うと、同じディレクトリにあるMarkdownファイルを読み込めます。たとえば、次のようにファイルを配置します。
+
+```text
+presentation/
+├── deck.md
+├── 01-title.md
+├── 02-introduction.md
+└── 03-summary.md
+```
+
+エントリーポイントとなる `deck.md` にfront matterとincludeディレクティブを書きます。スライドの区切りは通常どおり `---` で指定します。
+
+```markdown
+---
+marp: true
+---
+
+<!-- @include: 01-title.md -->
+
+---
+
+<!-- @include: 02-introduction.md -->
+
+---
+
+<!-- @include: 03-summary.md -->
+```
+
+各分割ファイルにはスライドの内容だけを書き、front matterは `deck.md` にまとめてください。分割ファイル内に `---` を書けば、1つのファイルに複数のスライドを含めることもできます。
+
+include先は `deck.md` と同じディレクトリの `.md` または `.markdown` ファイルに限られます。画像、`bibliography`、`csl` などの相対パスも `deck.md` と同じディレクトリを基準に解決されます。開いているデッキに含まれるファイルの変更は自動的にプレビューへ反映され、PDF/PPTXエクスポートにも結合後の内容が使われます。
+
 ### BibTeX/CSL引用
 
 Markdownファイルのfront matterで、BibTeXファイルとCSLファイルを指定します。パスはMarkdownファイルからの相対パスで解決されるため、`../ref.bib` のように1つ上のディレクトリも指定できます。プレビューとPDF/PPTXエクスポートの両方で同じ引用処理が使われます。
@@ -60,7 +94,7 @@ Kent Beck は XP を体系化した [@beck2000]。
 
 # References
 
-<!-- references -->
+<!-- @references -->
 ```
 
 対応している記法は以下です。
@@ -69,25 +103,25 @@ Kent Beck は XP を体系化した [@beck2000]。
 - `csl`: CSLファイルへのパスです。必須です。
 - `[@key]`: BibTeXのcitation keyを使った引用です。
 - `[@key1; @key2]`: 複数文献の引用です。
-- `<!-- references -->`: 参考文献リストの挿入位置です。引用を使う場合は必須です。
-- `<!-- references: 1-8 -->`: 参考文献リストの1件目から8件目だけを表示します。
-- `<!-- references: 9- -->`: 参考文献リストの9件目以降を表示します。
-- `<!-- references: -8 -->`: 参考文献リストの1件目から8件目を表示します。
+- `<!-- @references -->`: 参考文献リストの挿入位置です。引用を使う場合は必須です。
+- `<!-- @references: 1-8 -->`: 参考文献リストの1件目から8件目だけを表示します。
+- `<!-- @references: 9- -->`: 参考文献リストの9件目以降を表示します。
+- `<!-- @references: -8 -->`: 参考文献リストの1件目から8件目を表示します。
 
-たとえば、Markdownファイルが `slides/talk.md` にある場合、`bibliography: ../ref.bib` は `ref.bib` を参照します。`bibliography`、`csl`、または `<!-- references -->` が不足している場合、引用のレンダリングはエラーになります。
+たとえば、Markdownファイルが `slides/talk.md` にある場合、`bibliography: ../ref.bib` は `ref.bib` を参照します。`bibliography`、`csl`、または `<!-- @references -->` が不足している場合、引用のレンダリングはエラーになります。
 
-参考文献が1スライドに収まらない場合は、範囲指定付きの `<!-- references: ... -->` を複数のスライドに配置してください。見出しは通常のMarkdownとして自由に書けます。
+参考文献が1スライドに収まらない場合は、範囲指定付きの `<!-- @references: ... -->` を複数のスライドに配置してください。見出しは通常のMarkdownとして自由に書けます。
 
 ```markdown
 # References
 
-<!-- references: 1-8 -->
+<!-- @references: 1-8 -->
 
 ---
 
 # References (cont.)
 
-<!-- references: 9- -->
+<!-- @references: 9- -->
 ```
 
 ### クリップボード画像の保存

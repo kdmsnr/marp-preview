@@ -12,7 +12,7 @@ async function openFile() {
     });
 
     if (!result.canceled && result.filePaths.length > 0) {
-      loadFile(result.filePaths[0]);
+      await loadFile(result.filePaths[0]);
     }
   } catch (err) {
     console.error(err);

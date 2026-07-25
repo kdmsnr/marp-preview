@@ -52,7 +52,7 @@ app.whenReady().then(() => {
           removeRecentFile(filePath);
           return;
         }
-        loadFile(filePath);
+        void loadFile(filePath);
       },
       clearRecentFiles,
     });

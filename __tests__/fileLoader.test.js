@@ -1,4 +1,5 @@
 jest.mock('../app/state', () => ({
+  getCurrentFilePath: jest.fn(),
   setCurrentFilePath: jest.fn(),
 }));
 
@@ -23,21 +24,34 @@ const { loadFile } = require('../app/fileLoader');
 describe('fileLoader', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    renderAndSend.mockResolvedValue(['/tmp/deck.md', '/tmp/part.md']);
   });
 
-  test('returns false when no file path is provided', () => {
-    expect(loadFile(undefined)).toBe(false);
+  test('returns false when no file path is provided', async () => {
+    await expect(loadFile(undefined)).resolves.toBe(false);
     expect(state.setCurrentFilePath).not.toHaveBeenCalled();
   });
 
-  test('loads a file and wires dependencies', () => {
+  test('loads a file and wires dependencies', async () => {
     const filePath = '/tmp/deck.md';
-    const loaded = loadFile(filePath);
+    state.getCurrentFilePath.mockReturnValue(filePath);
 
-    expect(loaded).toBe(true);
+    await expect(loadFile(filePath)).resolves.toBe(true);
     expect(state.setCurrentFilePath).toHaveBeenCalledWith(filePath);
     expect(renderAndSend).toHaveBeenCalledWith(filePath);
-    expect(startWatching).toHaveBeenCalledWith(filePath);
+    expect(startWatching).toHaveBeenCalledWith(filePath, [
+      '/tmp/deck.md',
+      '/tmp/part.md',
+    ]);
     expect(addRecentFile).toHaveBeenCalledWith(filePath);
+  });
+
+  test('does not replace the watcher when another file opens first', async () => {
+    const filePath = '/tmp/deck.md';
+    state.getCurrentFilePath.mockReturnValue('/tmp/other.md');
+
+    await loadFile(filePath);
+
+    expect(startWatching).not.toHaveBeenCalled();
   });
 });

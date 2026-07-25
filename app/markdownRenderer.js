@@ -1,7 +1,7 @@
-const fs = require('fs').promises;
 const path = require('path');
 const { dialog } = require('electron');
 const { CITATION_BASE_PATH } = require('./citations');
+const { loadDeck } = require('./deckLoader');
 const { LOCAL_IMAGE_BASE_PATH } = require('./localImagePaths');
 const { createMarp } = require('./marp');
 const { getMainWindow } = require('./state');
@@ -9,8 +9,12 @@ const { getMainWindow } = require('./state');
 const marp = createMarp();
 
 async function renderAndSend(filePath) {
+  let dependencies = [filePath];
+
   try {
-    const markdown = await fs.readFile(filePath, 'utf-8');
+    const deck = await loadDeck(filePath);
+    const { markdown } = deck;
+    dependencies = deck.dependencies;
     const { html, css } = marp.render(markdown, {
       [CITATION_BASE_PATH]: path.dirname(filePath),
       [LOCAL_IMAGE_BASE_PATH]: path.dirname(filePath),
@@ -25,11 +29,14 @@ async function renderAndSend(filePath) {
       );
     }
   } catch (error) {
+    dependencies = error.dependencies || dependencies;
     dialog.showErrorBox(
       'Render Error',
       `Failed to render file: ${error.message}`,
     );
   }
+
+  return dependencies;
 }
 
 module.exports = {

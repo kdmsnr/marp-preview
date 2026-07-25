@@ -9,6 +9,7 @@ const {
 const { renderAndSend } = require('./markdownRenderer');
 
 let debounceTimer = null;
+let watchedPaths = new Set();
 
 function clearPendingRender() {
   if (debounceTimer) {
@@ -24,13 +25,43 @@ function stopWatching() {
     watcher.close();
     clearWatcher();
   }
+  watchedPaths = new Set();
 }
 
-function startWatching(filePath) {
+function normalizeDependencies(filePath, dependencies = []) {
+  return new Set(
+    [filePath, ...dependencies].filter(
+      (dependency) => typeof dependency === 'string' && dependency,
+    ),
+  );
+}
+
+function updateWatchedPaths(watcher, filePath, dependencies) {
+  const nextPaths = normalizeDependencies(filePath, dependencies);
+  const addedPaths = Array.from(nextPaths).filter(
+    (dependency) => !watchedPaths.has(dependency),
+  );
+  const removedPaths = Array.from(watchedPaths).filter(
+    (dependency) => !nextPaths.has(dependency),
+  );
+
+  if (addedPaths.length > 0) {
+    watcher.add(addedPaths);
+  }
+  if (removedPaths.length > 0) {
+    watcher.unwatch(removedPaths);
+  }
+
+  watchedPaths = nextPaths;
+}
+
+function startWatching(filePath, dependencies = [filePath]) {
   stopWatching();
 
-  const watcher = chokidar.watch(filePath, {
+  watchedPaths = normalizeDependencies(filePath, dependencies);
+  const watcher = chokidar.watch(Array.from(watchedPaths), {
     persistent: true,
+    ignoreInitial: true,
     awaitWriteFinish: {
       stabilityThreshold: 300,
       pollInterval: 100,
@@ -39,15 +70,27 @@ function startWatching(filePath) {
 
   setWatcher(watcher);
 
-  watcher.on('change', (changedPath) => {
+  const renderEntryFile = () => {
     clearPendingRender();
     debounceTimer = setTimeout(() => {
-      renderAndSend(changedPath);
+      Promise.resolve(renderAndSend(filePath)).then((nextDependencies) => {
+        if (getWatcher() === watcher && nextDependencies) {
+          updateWatchedPaths(watcher, filePath, nextDependencies);
+        }
+      });
       debounceTimer = null;
     }, 300);
-  });
+  };
 
-  watcher.on('unlink', () => {
+  watcher.on('change', renderEntryFile);
+  watcher.on('add', renderEntryFile);
+
+  watcher.on('unlink', (removedPath) => {
+    if (removedPath && removedPath !== filePath) {
+      renderEntryFile();
+      return;
+    }
+
     const mainWindow = getMainWindow();
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('marp-rendered', { html: '', css: '' });

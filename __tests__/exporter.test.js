@@ -16,6 +16,8 @@ jest.mock('@marp-team/marp-cli', () => ({
 }));
 
 const mockAccess = jest.fn();
+const mockWriteFile = jest.fn();
+const mockUnlink = jest.fn();
 jest.mock('fs', () => {
   const actual = jest.requireActual('fs');
   return {
@@ -23,9 +25,16 @@ jest.mock('fs', () => {
     promises: {
       ...actual.promises,
       access: mockAccess,
+      writeFile: mockWriteFile,
+      unlink: mockUnlink,
     },
   };
 });
+
+const mockLoadDeck = jest.fn();
+jest.mock('../app/deckLoader', () => ({
+  loadDeck: mockLoadDeck,
+}));
 
 jest.mock('../app/state', () => ({
   getCurrentFilePath: jest.fn(),
@@ -41,6 +50,12 @@ const enginePath = path.join(__dirname, '..', 'app', 'marpEngine.js');
 describe('exporter', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLoadDeck.mockResolvedValue({
+      markdown: '# Deck',
+      dependencies: ['/tmp/deck.md'],
+    });
+    mockWriteFile.mockResolvedValue();
+    mockUnlink.mockResolvedValue();
   });
 
   test('shows an error when no file is open', async () => {
@@ -95,6 +110,42 @@ describe('exporter', () => {
         message: expect.stringContaining('/tmp/output.pdf'),
       }),
     );
+  });
+
+  test('exports expanded Markdown and removes the temporary input', async () => {
+    state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
+    mockShowSaveDialog.mockResolvedValue({
+      canceled: false,
+      filePath: '/tmp/output.pdf',
+    });
+    mockLoadDeck.mockResolvedValue({
+      markdown: '# Title\n\n---\n\n# Body',
+      dependencies: ['/tmp/deck.md', '/tmp/body.md'],
+    });
+    mockMarpCli.mockResolvedValue(0);
+    mockAccess.mockResolvedValue();
+
+    await exportFile('pdf');
+
+    const temporaryPath = mockWriteFile.mock.calls[0][0];
+    expect(temporaryPath).toMatch(/^\/tmp\/\.marp-preview-[\da-f-]+\.md$/);
+    expect(mockWriteFile).toHaveBeenCalledWith(
+      temporaryPath,
+      '# Title\n\n---\n\n# Body',
+      {
+        encoding: 'utf-8',
+        flag: 'wx',
+      },
+    );
+    expect(mockMarpCli).toHaveBeenCalledWith([
+      '--engine',
+      enginePath,
+      '--allow-local-files',
+      path.basename(temporaryPath),
+      '-o',
+      '/tmp/output.pdf',
+    ]);
+    expect(mockUnlink).toHaveBeenCalledWith(temporaryPath);
   });
 
   test('reports failures from the Marp CLI', async () => {

@@ -4,6 +4,8 @@ jest.mock('chokidar', () => {
   const watch = jest.fn(() => {
     const emitter = new EventEmitter();
     emitter.close = jest.fn(() => emitter.removeAllListeners());
+    emitter.add = jest.fn();
+    emitter.unwatch = jest.fn();
     watchers.push(emitter);
     return emitter;
   });
@@ -68,7 +70,8 @@ describe('fileWatcher', () => {
     jest.useFakeTimers();
     chokidar.__reset();
     state.__reset();
-    renderAndSend.mockClear();
+    renderAndSend.mockReset();
+    renderAndSend.mockResolvedValue(['/tmp/sample.md']);
   });
 
   afterEach(() => {
@@ -79,9 +82,10 @@ describe('fileWatcher', () => {
     startWatching('/tmp/sample.md');
 
     expect(chokidar.watch).toHaveBeenCalledWith(
-      '/tmp/sample.md',
+      ['/tmp/sample.md'],
       expect.objectContaining({
         persistent: true,
+        ignoreInitial: true,
         awaitWriteFinish: expect.objectContaining({
           stabilityThreshold: 300,
           pollInterval: 100,
@@ -95,6 +99,50 @@ describe('fileWatcher', () => {
 
     expect(renderAndSend).toHaveBeenCalledTimes(1);
     expect(renderAndSend).toHaveBeenCalledWith('/tmp/sample.md');
+  });
+
+  test('watches included files and renders the entry file when they change', () => {
+    startWatching('/tmp/deck.md', [
+      '/tmp/deck.md',
+      '/tmp/01-title.md',
+      '/tmp/02-body.md',
+    ]);
+
+    expect(chokidar.watch).toHaveBeenCalledWith(
+      ['/tmp/deck.md', '/tmp/01-title.md', '/tmp/02-body.md'],
+      expect.any(Object),
+    );
+
+    const watcher = chokidar.__getWatchers()[0];
+    watcher.emit('change', '/tmp/02-body.md');
+    jest.advanceTimersByTime(300);
+
+    expect(renderAndSend).toHaveBeenCalledWith('/tmp/deck.md');
+  });
+
+  test('updates watched files after the include list changes', async () => {
+    renderAndSend.mockResolvedValue(['/tmp/deck.md', '/tmp/02-body.md']);
+    startWatching('/tmp/deck.md', ['/tmp/deck.md', '/tmp/01-title.md']);
+
+    const watcher = chokidar.__getWatchers()[0];
+    watcher.emit('change', '/tmp/deck.md');
+    jest.advanceTimersByTime(300);
+    await Promise.resolve();
+
+    expect(watcher.add).toHaveBeenCalledWith(['/tmp/02-body.md']);
+    expect(watcher.unwatch).toHaveBeenCalledWith(['/tmp/01-title.md']);
+  });
+
+  test('keeps the deck open when an included file is removed', () => {
+    startWatching('/tmp/deck.md', ['/tmp/deck.md', '/tmp/01-title.md']);
+    const watcher = chokidar.__getWatchers()[0];
+
+    watcher.emit('unlink', '/tmp/01-title.md');
+    jest.advanceTimersByTime(300);
+
+    expect(renderAndSend).toHaveBeenCalledWith('/tmp/deck.md');
+    expect(state.setCurrentFilePath).not.toHaveBeenCalled();
+    expect(watcher.close).not.toHaveBeenCalled();
   });
 
   test('closing a previous watcher before starting a new one', () => {
@@ -112,7 +160,7 @@ describe('fileWatcher', () => {
     const watcher = chokidar.__getWatchers()[0];
     const mainWindow = state.getMainWindow();
 
-    watcher.emit('unlink');
+    watcher.emit('unlink', 'deck.md');
 
     expect(state.setCurrentFilePath).toHaveBeenCalledWith(null);
     expect(mainWindow.webContents.send).toHaveBeenCalledWith('marp-rendered', {

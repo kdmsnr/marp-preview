@@ -127,7 +127,7 @@ describe('citations', () => {
       '',
       '# References',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -136,7 +136,7 @@ describe('citations', () => {
     expect(rendered).toContain('(Beck, 2000)');
     expect(rendered).toContain('data-csl-entry-id="beck2000"');
     expect(rendered).toContain('<i>Extreme Programming Explained</i>');
-    expect(rendered).not.toContain('<!-- references -->');
+    expect(rendered).not.toContain('<!-- @references -->');
   });
 
   test('renders bibliography URLs as hyperlinks', () => {
@@ -162,7 +162,7 @@ describe('citations', () => {
       '',
       '# References',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -183,7 +183,7 @@ describe('citations', () => {
       '',
       'Kent Beck wrote about XP [@beck2000].',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -210,7 +210,7 @@ describe('citations', () => {
       '',
       'Kent Beck wrote about XP [@beck2000].',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -230,7 +230,7 @@ describe('citations', () => {
       '',
       'Kent Beck wrote about XP [@beck2000].',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -252,7 +252,7 @@ describe('citations', () => {
       '',
       '# References',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const { css, html } = marp.render(markdown, {
@@ -278,7 +278,7 @@ describe('citations', () => {
       '',
       '# References',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -300,13 +300,13 @@ describe('citations', () => {
       '',
       '# References 1',
       '',
-      '<!-- references: 1-1 -->',
+      '<!-- @references: 1-1 -->',
       '',
       '---',
       '',
       '# References 2',
       '',
-      '<!-- references: 2- -->',
+      '<!-- @references: 2- -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -320,7 +320,7 @@ describe('citations', () => {
     expect(firstReferences).not.toContain('Fowler');
     expect(secondReferences).toContain('Fowler');
     expect(secondReferences).not.toContain('Beck');
-    expect(rendered).not.toContain('<!-- references:');
+    expect(rendered).not.toContain('<!-- @references:');
   });
 
   test('renders open-start references ranges', () => {
@@ -333,7 +333,7 @@ describe('citations', () => {
       '',
       'Kent Beck wrote about XP [@beck2000; @fowler2018].',
       '',
-      '<!-- references: -1 -->',
+      '<!-- @references: -1 -->',
     ].join('\n');
 
     const rendered = processCitations(markdown, { basePath: fixture.deckDir });
@@ -355,11 +355,29 @@ describe('citations', () => {
 
     expect(() =>
       processCitations(markdown, { basePath: fixture.deckDir }),
-    ).toThrow("Citation references marker '<!-- references -->' is required.");
+    ).toThrow("Citation references marker '<!-- @references -->' is required.");
+  });
+
+  test('rejects the old references marker syntax', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      'Kent Beck wrote about XP [@beck2000].',
+      '',
+      '<!-- references -->',
+    ].join('\n');
+
+    expect(() =>
+      processCitations(markdown, { basePath: fixture.deckDir }),
+    ).toThrow("Citation references marker '<!-- @references -->' is required.");
   });
 
   test('leaves a references marker alone when there are no citations', () => {
-    const markdown = ['# References', '', '<!-- references -->'].join('\n');
+    const markdown = ['# References', '', '<!-- @references -->'].join('\n');
 
     expect(processCitations(markdown)).toBe(markdown);
   });
@@ -373,7 +391,7 @@ describe('citations', () => {
       '',
       'Kent Beck wrote about XP [@beck2000].',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     expect(() =>
@@ -396,7 +414,7 @@ describe('citations', () => {
       '',
       '# References',
       '',
-      '<!-- references -->',
+      '<!-- @references -->',
     ].join('\n');
 
     const { css, html } = marp.render(markdown, {

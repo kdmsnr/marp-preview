@@ -1,6 +1,6 @@
-const mockReadFile = jest.fn();
 const mockShowErrorBox = jest.fn();
 const mockRender = jest.fn();
+const mockLoadDeck = jest.fn();
 const mockCreateMarp = jest.fn(() => ({
   render: mockRender,
 }));
@@ -11,16 +11,14 @@ const mockMainWindow = {
   isDestroyed: jest.fn(() => false),
 };
 
-jest.mock('fs', () => ({
-  promises: {
-    readFile: mockReadFile,
-  },
-}));
-
 jest.mock('electron', () => ({
   dialog: {
     showErrorBox: mockShowErrorBox,
   },
+}));
+
+jest.mock('../app/deckLoader', () => ({
+  loadDeck: mockLoadDeck,
 }));
 
 jest.mock('../app/marp', () => ({
@@ -39,7 +37,7 @@ describe('markdownRenderer', () => {
   let consoleWarnSpy;
 
   beforeEach(() => {
-    mockReadFile.mockReset();
+    mockLoadDeck.mockReset();
     mockShowErrorBox.mockReset();
     mockRender.mockReset();
     state.getMainWindow.mockClear();
@@ -55,12 +53,15 @@ describe('markdownRenderer', () => {
   });
 
   test('reads markdown, renders it, and sends contents to the window', async () => {
-    mockReadFile.mockResolvedValue('# Sample');
+    mockLoadDeck.mockResolvedValue({
+      markdown: '# Sample',
+      dependencies: ['/tmp/slides.md', '/tmp/part.md'],
+    });
     mockRender.mockReturnValue({ html: '<h1>Sample</h1>', css: 'body{}' });
 
-    await renderAndSend('/tmp/slides.md');
+    const dependencies = await renderAndSend('/tmp/slides.md');
 
-    expect(mockReadFile).toHaveBeenCalledWith('/tmp/slides.md', 'utf-8');
+    expect(mockLoadDeck).toHaveBeenCalledWith('/tmp/slides.md');
     expect(mockRender).toHaveBeenCalledWith('# Sample', {
       citationBasePath: '/tmp',
       localImageBasePath: '/tmp',
@@ -71,23 +72,29 @@ describe('markdownRenderer', () => {
     );
     expect(mockMainWindow.setTitle).toHaveBeenCalledWith('slides.md');
     expect(dialog.showErrorBox).not.toHaveBeenCalled();
+    expect(dependencies).toEqual(['/tmp/slides.md', '/tmp/part.md']);
   });
 
   test('shows an error dialog when rendering fails', async () => {
     const error = new Error('boom');
-    mockReadFile.mockRejectedValue(error);
+    error.dependencies = ['/tmp/slides.md', '/tmp/missing.md'];
+    mockLoadDeck.mockRejectedValue(error);
 
-    await renderAndSend('/tmp/slides.md');
+    const dependencies = await renderAndSend('/tmp/slides.md');
 
     expect(dialog.showErrorBox).toHaveBeenCalledWith(
       'Render Error',
       expect.stringContaining('boom'),
     );
     expect(mockMainWindow.webContents.send).not.toHaveBeenCalled();
+    expect(dependencies).toEqual(['/tmp/slides.md', '/tmp/missing.md']);
   });
 
   test('skips sending when the window has been destroyed', async () => {
-    mockReadFile.mockResolvedValue('# Deck');
+    mockLoadDeck.mockResolvedValue({
+      markdown: '# Deck',
+      dependencies: ['/tmp/slides.md'],
+    });
     mockRender.mockReturnValue({ html: '<h1>Deck</h1>', css: 'body{}' });
     mockMainWindow.isDestroyed.mockReturnValue(true);
 

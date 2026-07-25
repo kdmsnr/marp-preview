@@ -8,8 +8,9 @@ require('@citation-js/plugin-bibtex');
 require('@citation-js/plugin-csl');
 
 const CITATION_BASE_PATH = 'citationBasePath';
-const REFERENCES_MARKER = '<!-- references -->';
-const REFERENCES_MARKER_RE = /<!--\s*references(?:\s*:\s*([1-9]\d*)?\s*-\s*([1-9]\d*)?)?\s*-->/gi;
+const REFERENCES_MARKER = '<!-- @references -->';
+const REFERENCES_MARKER_RE =
+  /<!--\s*@references(?:\s*:\s*([1-9]\d*)?\s*-\s*([1-9]\d*)?)?\s*-->/gi;
 const CITATION_CLUSTER_RE = /\[([^\[\]]*@[\w:.#$%&\-+?<>~/]+[^\[\]]*)\]/g;
 const CITATION_KEY_RE = /^[A-Za-z0-9_:.#$%&\-+?<>~/]+$/;
 const CITATION_METADATA_FIELDS = new Set(['bibliography', 'csl']);
