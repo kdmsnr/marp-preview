@@ -187,6 +187,7 @@ describe('createMarp', () => {
 
     expect(css).toContain(FOOTNOTE_CSS);
     expect(css).toContain('position: absolute !important;');
+    expect(css).toContain('bottom: 21px !important;');
     expect(css).not.toContain(':has(.footnotes)');
     expect(css).toContain('position: relative !important;');
   });

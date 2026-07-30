@@ -21,7 +21,7 @@ div.marpit > svg[data-marpit-svg] > foreignObject > section,
 section .footnotes {
   position: absolute !important;
   right: 2.5em !important;
-  bottom: 80px !important;
+  bottom: 21px !important;
   left: 2.5em !important;
   display: block !important;
   width: auto !important;
