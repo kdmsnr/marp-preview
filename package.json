@@ -33,7 +33,8 @@
     "@marp-team/marpit": "^3.2.1",
     "chokidar": "^5.0.0",
     "js-yaml": "^5.2.1",
-    "markdown-it-footnote": "^4.0.0"
+    "markdown-it-footnote": "^4.0.0",
+    "marp-theme-science-tokyo": "https://github.com/kdmsnr/marp-theme_science-tokyo/archive/refs/tags/v0.1.0.tar.gz"
   },
   "devDependencies": {
     "electron": "^41.3.0",
@@ -54,6 +55,7 @@
     },
     "asarUnpack": [
       "node_modules/@marp-team/marp-cli/**",
+      "node_modules/marp-theme-science-tokyo/**",
       "node_modules/puppeteer/**"
     ]
   },

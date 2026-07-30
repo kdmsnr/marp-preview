@@ -10,6 +10,7 @@
 - **BibTeX/CSL引用**: `bibliography` と `csl` を指定し、`[@key]` 形式の引用と参考文献リストを表示できます。
 - **シンプルなUI**: `CmdOrCtrl+O` またはメニューの `File > Open File` からファイルを選択するだけの簡単操作です。
 - **PDF/PPTXエクスポート**: 開いているMarp MarkdownファイルをPDFまたはPPTX形式でエクスポートできます。メニューの `File > Export` から選択してください。
+- **Science Tokyoテーマ**: 東京科学大学（Science Tokyo）のMarpテーマを内蔵し、プレビューとPDF/PPTXエクスポートの両方で利用できます。
 - **クリップボード画像の保存**: 画像をコピーして `CmdOrCtrl+V` を押すと、Markdownファイルと同じ階層の `images` ディレクトリにPNGとして保存し、画像を参照するMarkdown記法をクリップボードにコピーします。
 - **常に前面表示**: 他のウィンドウの上にアプリケーションを常に表示します。メニューの `View > Always On Top` またはショートカットキー `CmdOrCtrl+T` で切り替えられます。
 
@@ -74,6 +75,21 @@ marp: true
 各分割ファイルにはスライドの内容だけを書き、front matterは `deck.md` にまとめてください。分割ファイル内に `---` を書けば、1つのファイルに複数のスライドを含めることもできます。
 
 include先は `deck.md` と同じディレクトリの `.md` または `.markdown` ファイルに限られます。画像、`bibliography`、`csl` などの相対パスも `deck.md` と同じディレクトリを基準に解決されます。開いているデッキに含まれるファイルの変更は自動的にプレビューへ反映され、PDF/PPTXエクスポートにも結合後の内容が使われます。
+
+### Science Tokyoテーマ
+
+front matterで`science-tokyo`を指定すると、内蔵テーマを利用できます。テーマ用のCSSや画像をプレゼンテーションのディレクトリへコピーする必要はありません。
+
+```yaml
+---
+marp: true
+theme: science-tokyo
+size: 16:9
+paginate: true
+---
+```
+
+表紙、中表紙、目次、コンテンツ用のクラスと記述例は、[marp-theme_science-tokyo](https://github.com/kdmsnr/marp-theme_science-tokyo)を参照してください。
 
 ### BibTeX/CSL引用
 
@@ -165,3 +181,5 @@ Markdownファイルを開いていない場合や、クリップボードに画
 ## 📝 ライセンス
 
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
+
+内蔵するScience Tokyoテーマのロゴ、背景画像、デザイン資産には別の利用条件があります。[テーマの利用条件](https://github.com/kdmsnr/marp-theme_science-tokyo/blob/v0.1.0/LICENSE)と[Science Tokyoデザインシステムの利用規約](https://design-system.isct.ac.jp/ja/terms-of-use)を確認してください。
