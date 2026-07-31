@@ -139,6 +139,72 @@ describe('citations', () => {
     expect(rendered).not.toContain('<!-- @references -->');
   });
 
+  test('renders author-in-text citations through the CSL processor', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      '@beck2000 wrote about XP.',
+      '',
+      '# References',
+      '',
+      '<!-- @references -->',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain(
+      '<span class="citation" data-cites="beck2000">Beck (2000)</span> wrote about XP.',
+    );
+    expect(rendered).toContain('data-csl-entry-id="beck2000"');
+    expect(rendered).not.toContain('@beck2000');
+  });
+
+  test('renders mixed citation modes in document order', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      '@fowler2018 discussed refactoring before [@beck2000].',
+      '',
+      '<!-- @references -->',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain(
+      '<span class="citation" data-cites="fowler2018">Fowler (2018)</span> discussed refactoring before <span class="citation" data-cites="beck2000">(Beck, 2000)</span>.',
+    );
+  });
+
+  test('does not render citations in protected Markdown regions', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      '`@beck2000`',
+      '',
+      '```markdown',
+      '@beck2000',
+      '```',
+      '',
+      '<!-- @beck2000 -->',
+    ].join('\n');
+
+    expect(processCitations(markdown, { basePath: fixture.deckDir })).toBe(
+      markdown,
+    );
+  });
+
   test('renders bibliography URLs as hyperlinks', () => {
     fixture = createCitationFixture();
     fs.writeFileSync(

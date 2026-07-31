@@ -104,6 +104,7 @@ csl: ../styles/apa.csl
 # Slide
 
 Kent Beck は XP を体系化した [@beck2000]。
+@beck2000 は XP を体系化した。
 複数引用もできます [@beck2000; @fowler2018]。
 
 ---
@@ -118,6 +119,7 @@ Kent Beck は XP を体系化した [@beck2000]。
 - `bibliography`: BibTeXファイルへのパスです。必須です。
 - `csl`: CSLファイルへのパスです。必須です。
 - `[@key]`: BibTeXのcitation keyを使った引用です。
+- `@key`: 著者名を本文に含める引用です。たとえばAPAでは `Beck (2000)` のように表示されます。
 - `[@key1; @key2]`: 複数文献の引用です。
 - `<!-- @references -->`: 参考文献リストの挿入位置です。省略した場合、本文中の引用だけを表示します。
 - `<!-- @references: 1-8 -->`: 参考文献リストの1件目から8件目だけを表示します。

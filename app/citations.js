@@ -12,6 +12,8 @@ const REFERENCES_MARKER = '<!-- @references -->';
 const REFERENCES_MARKER_RE =
   /<!--\s*@references(?:\s*:\s*([1-9]\d*)?\s*-\s*([1-9]\d*)?)?\s*-->/gi;
 const CITATION_CLUSTER_RE = /\[([^\[\]]*@[\w:.#$%&\-+?<>~/]+[^\[\]]*)\]/g;
+const AUTHOR_IN_TEXT_CITATION_RE =
+  /@([A-Za-z0-9_]+(?:[.:#$%&\-+?<>~/][A-Za-z0-9_]+)*)/g;
 const CITATION_KEY_RE = /^[A-Za-z0-9_:.#$%&\-+?<>~/]+$/;
 const CITATION_METADATA_FIELDS = new Set(['bibliography', 'csl']);
 const BUNDLED_CSL_LOCALES = new Map([
@@ -178,6 +180,94 @@ function parseCitationItems(content) {
   return items;
 }
 
+function addMatchesAsProtectedRanges(markdown, pattern, ranges) {
+  for (const match of markdown.matchAll(pattern)) {
+    ranges.push({ end: match.index + match[0].length, start: match.index });
+  }
+}
+
+function findProtectedCitationRanges(markdown) {
+  const ranges = [];
+  const frontMatter = markdown.match(
+    /^(?:\uFEFF)?(?:[ \t]*\r?\n)*---\r?\n[\s\S]*?\r?\n(?:---|\.\.\.)\s*(?:\r?\n|$)/,
+  );
+  if (frontMatter) {
+    ranges.push({ end: frontMatter[0].length, start: 0 });
+  }
+
+  addMatchesAsProtectedRanges(markdown, /<!--[\s\S]*?-->/g, ranges);
+  addMatchesAsProtectedRanges(
+    markdown,
+    /<(style|script)\b[^>]*>[\s\S]*?<\/\1>/gi,
+    ranges,
+  );
+  addMatchesAsProtectedRanges(
+    markdown,
+    /^[ \t]{0,3}`{3,}[^\r\n]*(?:\r?\n|$)[\s\S]*?^[ \t]{0,3}`{3,}[ \t]*(?:\r?\n|$)/gm,
+    ranges,
+  );
+  addMatchesAsProtectedRanges(
+    markdown,
+    /^[ \t]{0,3}~{3,}[^\r\n]*(?:\r?\n|$)[\s\S]*?^[ \t]{0,3}~{3,}[ \t]*(?:\r?\n|$)/gm,
+    ranges,
+  );
+  addMatchesAsProtectedRanges(markdown, /(`+)(?!`)[^\r\n]*?\1/g, ranges);
+
+  return ranges;
+}
+
+function isPositionInRanges(position, ranges) {
+  return ranges.some(
+    (range) => position >= range.start && position < range.end,
+  );
+}
+
+function collectCitationOccurrences(markdown) {
+  const protectedRanges = findProtectedCitationRanges(markdown);
+  const clusterRanges = [];
+  const occurrences = [];
+
+  for (const match of markdown.matchAll(CITATION_CLUSTER_RE)) {
+    const range = { end: match.index + match[0].length, start: match.index };
+    clusterRanges.push(range);
+
+    const items = parseCitationItems(match[1]);
+    if (!items || isPositionInRanges(match.index, protectedRanges)) continue;
+
+    occurrences.push({
+      end: range.end,
+      items,
+      mode: 'normal',
+      start: range.start,
+    });
+  }
+
+  for (const match of markdown.matchAll(AUTHOR_IN_TEXT_CITATION_RE)) {
+    const start = match.index;
+    const end = start + match[0].length;
+    const previous = start > 0 ? markdown[start - 1] : '';
+    const next = markdown[end] || '';
+
+    if (
+      (previous && /[A-Za-z0-9_@]/.test(previous)) ||
+      (next && /[A-Za-z0-9_:.#$%&\-+?<>~/]/.test(next)) ||
+      isPositionInRanges(start, protectedRanges) ||
+      isPositionInRanges(start, clusterRanges)
+    ) {
+      continue;
+    }
+
+    occurrences.push({
+      end,
+      items: [{ id: match[1] }],
+      mode: 'author-in-text',
+      start,
+    });
+  }
+
+  return occurrences.sort((left, right) => left.start - right.start);
+}
+
 function escapeAttribute(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -255,17 +345,22 @@ function createCitationContext(markdown, basePath) {
   };
 }
 
-function renderCitation(citationContext, items) {
+function renderCitation(citationContext, items, mode = 'normal') {
   for (const item of items) {
     if (!citationContext.citedIds.includes(item.id)) {
       citationContext.citedIds.push(item.id);
     }
   }
 
+  const properties = { noteIndex: 0 };
+  if (mode === 'author-in-text') {
+    properties.mode = 'composite';
+  }
+
   const citation = citationContext.cite.format('citation', {
     entry: {
       citationItems: items,
-      properties: { noteIndex: 0 },
+      properties,
     },
     format: 'html',
     template: citationContext.template,
@@ -313,22 +408,24 @@ function sliceBibliographyHtml(bibliographyHtml, range) {
 function processCitations(markdown, options = {}) {
   const hasReferenceMarker = REFERENCES_MARKER_RE.test(markdown);
   REFERENCES_MARKER_RE.lastIndex = 0;
-  const citationMatches = [...markdown.matchAll(CITATION_CLUSTER_RE)];
-  const parsedMatches = citationMatches
-    .map((match) => ({ content: match[1], items: parseCitationItems(match[1]) }))
-    .filter((match) => match.items);
+  const occurrences = collectCitationOccurrences(markdown);
 
-  if (parsedMatches.length === 0) return markdown;
+  if (occurrences.length === 0) return markdown;
 
   const citationContext = createCitationContext(markdown, options.basePath);
-  const renderedMarkdown = markdown.replace(
-    CITATION_CLUSTER_RE,
-    (match, content) => {
-      const items = parseCitationItems(content);
-      if (!items) return match;
-      return renderCitation(citationContext, items);
-    },
-  );
+  const renderedParts = [];
+  let cursor = 0;
+
+  for (const occurrence of occurrences) {
+    renderedParts.push(markdown.slice(cursor, occurrence.start));
+    renderedParts.push(
+      renderCitation(citationContext, occurrence.items, occurrence.mode),
+    );
+    cursor = occurrence.end;
+  }
+  renderedParts.push(markdown.slice(cursor));
+  const renderedMarkdown = renderedParts.join('');
+
   if (!hasReferenceMarker) return renderedMarkdown;
 
   const bibliography = renderBibliography(citationContext);
