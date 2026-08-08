@@ -1,26 +1,44 @@
-const { ADMONITION_CSS, ADMONITIONS } = require('../app/admonitions');
+const {
+  ADMONITION_ALIASES,
+  ADMONITION_CSS,
+  ADMONITIONS,
+} = require('../app/admonitions');
 const { createMarp } = require('../app/marp');
 const marpPreviewEngine = require('../app/marpEngine');
 
 const ADMONITION_CASES = Object.entries(ADMONITIONS).map(
   ([type, { icon, label, path }]) => ({ icon, label, path, type }),
 );
+const ALIAS_CASES = Object.entries(ADMONITION_ALIASES).map(([alias, type]) => ({
+  alias,
+  type,
+}));
 
-describe('GitHub-style admonitions', () => {
+function titleCaseIdentifier(identifier) {
+  return identifier
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((part) => `${part[0]}${part.slice(1).toLowerCase()}`)
+    .join(' ');
+}
+
+describe('Obsidian-style callouts', () => {
   test.each(ADMONITION_CASES)(
-    'renders $type with its GitHub title and icon',
+    'renders $type with its default title and icon',
     ({ icon, label, path, type }) => {
       const marp = createMarp({ inlineSVG: false });
       const { html } = marp.render(`> [!${type}]\n> ${type} body.`);
 
       expect(html).toContain(
-        `<div class="markdown-alert markdown-alert-${type.toLowerCase()}">`,
+        `<div class="markdown-alert markdown-alert-${type.toLowerCase()}" data-callout="${type.toLowerCase()}">`,
       );
       expect(html).toContain(
         `<p class="markdown-alert-title" dir="auto"><svg data-component="Octicon" class="octicon octicon-${icon} mr-2"`,
       );
       expect(html).toContain(`aria-hidden="true"><path d="${path}"></path>`);
-      expect(html).toContain(`</svg>${label}</p>`);
+      expect(html).toContain(
+        `</svg><span class="markdown-alert-title-text">${label}</span></p>`,
+      );
       expect(html).toContain(`<p>${type} body.</p>`);
       expect(html).not.toContain(`[!${type}]`);
     },
@@ -30,8 +48,12 @@ describe('GitHub-style admonitions', () => {
     const marp = createMarp({ inlineSVG: false });
     const { html } = marp.render('>  [!note]\n> Lowercase body.');
 
-    expect(html).toContain('<div class="markdown-alert markdown-alert-note">');
-    expect(html).toContain('</svg>Note</p>');
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-note" data-callout="note">',
+    );
+    expect(html).toContain(
+      '</svg><span class="markdown-alert-title-text">Note</span></p>',
+    );
     expect(html).toContain('<p>Lowercase body.</p>');
   });
 
@@ -43,7 +65,9 @@ describe('GitHub-style admonitions', () => {
     const marp = createMarp({ inlineSVG: false });
     const { html } = marp.render(markdown);
 
-    expect(html).toContain('<div class="markdown-alert markdown-alert-note">');
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-note" data-callout="note">',
+    );
     expect(html).not.toContain('[!NOTE]');
   });
 
@@ -72,16 +96,108 @@ describe('GitHub-style admonitions', () => {
     const marp = createMarp({ inlineSVG: false });
     const { html } = marp.render('> [!NOTE]\n>\n> Later paragraph.');
 
-    expect(html).toContain('<div class="markdown-alert markdown-alert-note">');
-    expect(html).toContain('</svg>Note</p>\n<p>Later paragraph.</p>');
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-note" data-callout="note">',
+    );
+    expect(html).toContain(
+      '</svg><span class="markdown-alert-title-text">Note</span></p>\n<p>Later paragraph.</p>',
+    );
     expect(html).not.toContain('<p></p>');
   });
 
+  test.each(ALIAS_CASES)(
+    'maps the $alias alias to $type styling',
+    ({ alias, type }) => {
+      const marp = createMarp({ inlineSVG: false });
+      const { html } = marp.render(`> [!${alias}]\n> Alias body.`);
+
+      expect(html).toContain(
+        `<div class="markdown-alert markdown-alert-${type.toLowerCase()}" data-callout="${alias.toLowerCase()}">`,
+      );
+      expect(html).toContain(
+        `</svg><span class="markdown-alert-title-text">${titleCaseIdentifier(alias)}</span></p>`,
+      );
+    },
+  );
+
+  test('renders a custom title with inline Markdown', () => {
+    const marp = createMarp({ inlineSVG: false });
+    const markdown = [
+      '> [!tip] Custom **title** with [details](https://example.com)',
+      '> Callout body.',
+    ].join('\n');
+    const { html } = marp.render(markdown);
+
+    expect(html).toContain(
+      '</svg><span class="markdown-alert-title-text">Custom <strong>title</strong> with <a href="https://example.com">details</a></span></p>',
+    );
+    expect(html).toContain('<p>Callout body.</p>');
+  });
+
+  test.each([
+    ['a custom title', '> [!tip] Title only', 'tip', 'Title only'],
+    ['the default title', '> [!note]', 'note', 'Note'],
+  ])(
+    'renders a title-only callout with %s',
+    (_description, markdown, type, title) => {
+      const marp = createMarp({ inlineSVG: false });
+      const { html } = marp.render(markdown);
+
+      expect(html).toContain(
+        `<div class="markdown-alert markdown-alert-${type}" data-callout="${type}">`,
+      );
+      expect(html).toContain(
+        `</svg><span class="markdown-alert-title-text">${title}</span></p>\n</div>`,
+      );
+    },
+  );
+
+  test('falls back to note styling for an unknown type', () => {
+    const marp = createMarp({ inlineSVG: false });
+    const { html } = marp.render('> [!custom-question_type]\n> Custom body.');
+
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-note" data-callout="custom-question_type">',
+    );
+    expect(html).toContain(
+      '</svg><span class="markdown-alert-title-text">Custom Question Type</span></p>',
+    );
+    expect(html).toContain('<p>Custom body.</p>');
+  });
+
+  test('matches type identifiers case-insensitively', () => {
+    const marp = createMarp({ inlineSVG: false });
+    const { html } = marp.render('> [!QuEsTiOn]\n> Body.');
+
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-question" data-callout="question">',
+    );
+    expect(html).toContain(
+      '</svg><span class="markdown-alert-title-text">Question</span></p>',
+    );
+  });
+
+  test.each([
+    ['link', '[link', 'text](https://example.com)', '<p>text]('],
+    ['emphasis', '**unclosed', 'body**', '<p>body**</p>'],
+    ['code span', '`unclosed', 'body`', '<p>body`</p>'],
+  ])(
+    'keeps %s syntax from crossing the title/body boundary',
+    (_description, title, body, bodyHtml) => {
+      const marp = createMarp({ inlineSVG: false });
+      const { html } = marp.render(`> [!note] ${title}\n> ${body}`);
+
+      expect(html).toContain(
+        `<span class="markdown-alert-title-text">${title}</span>`,
+      );
+      expect(html).toContain(bodyHtml);
+    },
+  );
+
   test.each([
     ['ordinary blockquote', '> Quoted text.'],
-    ['unknown marker', '> [!INFO]\n> Information.'],
-    ['custom title', '> [!WARNING] Custom title\n> Warning.'],
-    ['empty body', '> [!IMPORTANT]'],
+    ['collapsed fold marker', '> [!faq]- Folded\n> Answer.'],
+    ['expanded fold marker', '> [!faq]+ Expanded\n> Answer.'],
     ['nested blockquote', '> Outer\n> > [!TIP]\n> > Nested.'],
     ['list item', '- Item\n  > [!CAUTION]\n  > Nested.'],
     [
@@ -104,7 +220,9 @@ describe('GitHub-style admonitions', () => {
     const { html } = marp.render(markdown);
 
     expect(html).toContain('<div>Standalone HTML.</div>');
-    expect(html).toContain('<div class="markdown-alert markdown-alert-note">');
+    expect(html).toContain(
+      '<div class="markdown-alert markdown-alert-note" data-callout="note">',
+    );
   });
 
   test('keeps multiple alerts and a normal blockquote separate', () => {
@@ -161,10 +279,11 @@ describe('GitHub-style admonitions', () => {
     const { css, html } = marp.render(markdown);
 
     expect(html).toContain(
-      '<div class="markdown-alert markdown-alert-caution">',
+      '<div class="markdown-alert markdown-alert-caution" data-callout="caution">',
     );
     expect(css).toContain(ADMONITION_CSS);
     expect(css).toContain('fill: currentColor !important;');
+    expect(css).toContain('section .markdown-alert-title-text');
     expect(css).toContain('text-align: left !important;');
     expect(css).toContain(
       'section:where(.invert, .gaia, .title, .title-a) .markdown-alert',
@@ -173,5 +292,8 @@ describe('GitHub-style admonitions', () => {
       'background: color-mix(in srgb, Canvas 96%, var(--markdown-alert-color) 4%) !important;',
     );
     expect(css).toContain('light-dark(#cf222e, #f85149)');
+    expect(css).toContain(
+      'background: color-mix(in srgb, var(--markdown-alert-color) 8%, transparent) !important;',
+    );
   });
 });
