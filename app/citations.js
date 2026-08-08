@@ -320,13 +320,13 @@ function createStyleTemplate(csl) {
   return templateName;
 }
 
-function createCitationContext(markdown, basePath) {
-  const metadata = parseCitationMetadata(markdown);
+function createCitationContext(markdown, basePath, metadata) {
+  const citationMetadata = metadata || parseCitationMetadata(markdown);
   const bibliographyPaths = normalizePathList(
-    metadata.bibliography,
+    citationMetadata.bibliography,
     'bibliography',
   );
-  const cslPaths = normalizePathList(metadata.csl, 'csl');
+  const cslPaths = normalizePathList(citationMetadata.csl, 'csl');
   if (cslPaths.length !== 1) {
     throw new Error("Citation metadata 'csl' must specify exactly one file.");
   }
@@ -338,8 +338,11 @@ function createCitationContext(markdown, basePath) {
   );
   const csl = readMetadataFiles(basePath, cslPaths, 'csl');
 
+  const cite = new Cite(bibliography);
+
   return {
-    cite: new Cite(bibliography),
+    availableIds: new Set(cite.getIds()),
+    cite,
     citedIds: [],
     template: createStyleTemplate(csl),
   };
@@ -412,11 +415,33 @@ function processCitations(markdown, options = {}) {
 
   if (occurrences.length === 0) return markdown;
 
-  const citationContext = createCitationContext(markdown, options.basePath);
+  const metadata = parseCitationMetadata(markdown);
+  const hasExplicitCitation = occurrences.some(
+    (occurrence) => occurrence.mode === 'normal',
+  );
+  if (!hasExplicitCitation && (!metadata.bibliography || !metadata.csl)) {
+    return markdown;
+  }
+
+  const citationContext = createCitationContext(
+    markdown,
+    options.basePath,
+    metadata,
+  );
+  const renderableOccurrences = occurrences.filter(
+    (occurrence) =>
+      occurrence.mode === 'normal' ||
+      occurrence.items.every((item) =>
+        citationContext.availableIds.has(item.id),
+      ),
+  );
+
+  if (renderableOccurrences.length === 0) return markdown;
+
   const renderedParts = [];
   let cursor = 0;
 
-  for (const occurrence of occurrences) {
+  for (const occurrence of renderableOccurrences) {
     renderedParts.push(markdown.slice(cursor, occurrence.start));
     renderedParts.push(
       renderCitation(citationContext, occurrence.items, occurrence.mode),

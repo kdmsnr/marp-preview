@@ -163,6 +163,54 @@ describe('citations', () => {
     expect(rendered).not.toContain('@beck2000');
   });
 
+  test('leaves unknown author-in-text handles unchanged', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      'footer: Masanori Kado (@kdmsnr) | Waicrew, Inc.',
+      '---',
+      '',
+      '角 征典 （カド マサノリ）@kdmsnr',
+      '',
+      '@beck2000 wrote about XP.',
+    ].join('\n');
+
+    const rendered = processCitations(markdown, { basePath: fixture.deckDir });
+
+    expect(rendered).toContain(
+      'footer: Masanori Kado (@kdmsnr) | Waicrew, Inc.',
+    );
+    expect(rendered).toContain('角 征典 （カド マサノリ）@kdmsnr');
+    expect(rendered).toContain(
+      '<span class="citation" data-cites="beck2000">Beck (2000)</span> wrote about XP.',
+    );
+    expect(rendered).not.toContain('data-cites="kdmsnr"');
+  });
+
+  test('leaves author-like handles unchanged without citation metadata', () => {
+    const markdown = '角 征典 （カド マサノリ）@kdmsnr';
+
+    expect(processCitations(markdown)).toBe(markdown);
+  });
+
+  test('still rejects an unknown explicit citation', () => {
+    fixture = createCitationFixture();
+    const markdown = [
+      '---',
+      'bibliography: ../ref.bib',
+      'csl: ../apa.csl',
+      '---',
+      '',
+      'Unknown source [@missing].',
+    ].join('\n');
+
+    expect(() =>
+      processCitations(markdown, { basePath: fixture.deckDir }),
+    ).toThrow(/Cannot find entry with id ['"]missing['"]/);
+  });
+
   test('renders mixed citation modes in document order', () => {
     fixture = createCitationFixture();
     const markdown = [
