@@ -7,6 +7,7 @@
 - **リアルタイムプレビュー**: Markdownファイルの変更を監視し、保存するたびにプレビューが自動で更新されます。
 - **連続スクロール表示**: 複数のスライドを縦に連続して表示し、スクロールしながら全体を確認できます。
 - **脚注**: `[^id]` / `[^id]: note` とインライン脚注 `^[note]` をスライドごとに表示できます。
+- **GitHub Alerts**: `> [!NOTE]` 形式のadmonitionを、種類ごとの色とアイコン付きで表示できます。
 - **BibTeX/CSL引用**: `bibliography` と `csl` を指定し、`[@key]` 形式の引用と参考文献リストを表示できます。
 - **シンプルなUI**: `CmdOrCtrl+O` またはメニューの `File > Open File` からファイルを選択するだけの簡単操作です。
 - **PDF/PPTXエクスポート**: 開いているMarp MarkdownファイルをPDFまたはPPTX形式でエクスポートできます。メニューの `File > Export` から選択してください。
@@ -90,6 +91,37 @@ paginate: true
 ```
 
 表紙、中表紙、目次、コンテンツ用のクラスと記述例は、[marp-theme_science-tokyo](https://github.com/kdmsnr/marp-theme_science-tokyo)を参照してください。
+
+### GitHub Alerts（admonition）
+
+GitHubと同じblockquote形式で、補足や警告を色とアイコン付きで表示できます。プレビューだけでなく、PDF/PPTXエクスポートにも反映されます。次の例では、各種類を `---` で別のスライドに分けています。
+
+```markdown
+> [!NOTE]
+> 読み飛ばす場合にも知っておくと役立つ補足です。
+
+---
+
+> [!TIP]
+> より簡単に進めるためのヒントです。
+
+---
+
+> [!IMPORTANT]
+> 目的を達成するために必要な重要情報です。
+
+---
+
+> [!WARNING]
+> 問題を避けるため、すぐに確認すべき注意事項です。
+
+---
+
+> [!CAUTION]
+> データ損失などの危険につながる操作です。
+```
+
+対応する種類は `NOTE`、`TIP`、`IMPORTANT`、`WARNING`、`CAUTION` の5つです。複数段落を書く場合は、空のblockquote行を挟みます。GitHubと同様、リストや別のblockquoteなど、ほかの要素の内側にAlertsをネストすることはできません。
 
 ### BibTeX/CSL引用
 

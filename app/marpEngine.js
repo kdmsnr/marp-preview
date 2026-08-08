@@ -1,4 +1,5 @@
 const { Marp } = require('@marp-team/marp-core');
+const { installAdmonitions } = require('./admonitions');
 const { installBundledThemes } = require('./bundledThemes');
 const { installCitations } = require('./citations');
 const { installFootnotes } = require('./footnotes');
@@ -9,6 +10,7 @@ function marpPreviewEngine(options = {}) {
   const marp = options.marp || new Marp(options);
   installBundledThemes(marp);
   installCitations(marp);
+  installAdmonitions(marp);
   installFootnotes(marp);
   installLocalImagePaths(marp);
   return installPagination(marp);
