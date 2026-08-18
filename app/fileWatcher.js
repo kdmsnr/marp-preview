@@ -1,31 +1,32 @@
 const chokidar = require('chokidar');
+const { dialog } = require('electron');
 const {
-  clearWatcher,
-  getMainWindow,
-  getWatcher,
-  setCurrentFilePath,
-  setWatcher,
+  beginRender,
+  clearCurrentFilePath,
+  getWindowSession,
+  isCurrentRender,
 } = require('./state');
 const { renderAndSend } = require('./markdownRenderer');
 
-let debounceTimer = null;
-let watchedPaths = new Set();
-
-function clearPendingRender() {
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-    debounceTimer = null;
+function clearPendingRender(session) {
+  if (session?.debounceTimer) {
+    clearTimeout(session.debounceTimer);
+    session.debounceTimer = null;
   }
 }
 
-function stopWatching() {
-  clearPendingRender();
-  const watcher = getWatcher();
-  if (watcher) {
-    watcher.close();
-    clearWatcher();
+function stopWatching(window) {
+  const session = getWindowSession(window);
+  if (!session) return;
+
+  clearPendingRender(session);
+  if (session.watcher) {
+    Promise.resolve(session.watcher.close()).catch((error) => {
+      console.error('Failed to stop watching files:', error);
+    });
+    session.watcher = null;
   }
-  watchedPaths = new Set();
+  session.watchedPaths = new Set();
 }
 
 function normalizeDependencies(filePath, dependencies = []) {
@@ -36,12 +37,12 @@ function normalizeDependencies(filePath, dependencies = []) {
   );
 }
 
-function updateWatchedPaths(watcher, filePath, dependencies) {
+function updateWatchedPaths(session, watcher, filePath, dependencies) {
   const nextPaths = normalizeDependencies(filePath, dependencies);
   const addedPaths = Array.from(nextPaths).filter(
-    (dependency) => !watchedPaths.has(dependency),
+    (dependency) => !session.watchedPaths.has(dependency),
   );
-  const removedPaths = Array.from(watchedPaths).filter(
+  const removedPaths = Array.from(session.watchedPaths).filter(
     (dependency) => !nextPaths.has(dependency),
   );
 
@@ -52,14 +53,16 @@ function updateWatchedPaths(watcher, filePath, dependencies) {
     watcher.unwatch(removedPaths);
   }
 
-  watchedPaths = nextPaths;
+  session.watchedPaths = nextPaths;
 }
 
-function startWatching(filePath, dependencies = [filePath]) {
-  stopWatching();
+function startWatching(window, filePath, dependencies = [filePath]) {
+  stopWatching(window);
+  const session = getWindowSession(window);
+  if (!session) return;
 
-  watchedPaths = normalizeDependencies(filePath, dependencies);
-  const watcher = chokidar.watch(Array.from(watchedPaths), {
+  session.watchedPaths = normalizeDependencies(filePath, dependencies);
+  const watcher = chokidar.watch(Array.from(session.watchedPaths), {
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: {
@@ -68,36 +71,59 @@ function startWatching(filePath, dependencies = [filePath]) {
     },
   });
 
-  setWatcher(watcher);
+  session.watcher = watcher;
 
   const renderEntryFile = () => {
-    clearPendingRender();
-    debounceTimer = setTimeout(() => {
-      Promise.resolve(renderAndSend(filePath)).then((nextDependencies) => {
-        if (getWatcher() === watcher && nextDependencies) {
-          updateWatchedPaths(watcher, filePath, nextDependencies);
-        }
-      });
-      debounceTimer = null;
+    if (session.watcher !== watcher) return;
+    clearPendingRender(session);
+    session.debounceTimer = setTimeout(() => {
+      session.debounceTimer = null;
+      const revision = beginRender(window, filePath);
+      if (revision === null) return;
+
+      Promise.resolve(renderAndSend(window, filePath, revision))
+        .then((nextDependencies) => {
+          if (
+            session.watcher === watcher &&
+            isCurrentRender(window, filePath, revision) &&
+            nextDependencies
+          ) {
+            updateWatchedPaths(session, watcher, filePath, nextDependencies);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to refresh the preview:', error);
+        });
     }, 300);
   };
 
   watcher.on('change', renderEntryFile);
   watcher.on('add', renderEntryFile);
 
+  watcher.on('error', (error) => {
+    if (session.watcher !== watcher) return;
+    console.error('Failed to watch files:', error);
+    dialog.showErrorBox(
+      'File Watch Error',
+      `The preview will no longer update automatically: ${error.message}`,
+    );
+    stopWatching(window);
+  });
+
   watcher.on('unlink', (removedPath) => {
+    if (session.watcher !== watcher) return;
     if (removedPath && removedPath !== filePath) {
       renderEntryFile();
       return;
     }
 
-    const mainWindow = getMainWindow();
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('marp-rendered', { html: '', css: '' });
-      mainWindow.setTitle('Marp Preview');
+    clearCurrentFilePath(window);
+    if (!window.isDestroyed?.()) {
+      window.webContents.send('marp-rendered', { html: '', css: '' });
+      window.setTitle('Marp Preview');
+      window.setRepresentedFilename?.('');
     }
-    setCurrentFilePath(null);
-    stopWatching();
+    stopWatching(window);
   });
 }
 

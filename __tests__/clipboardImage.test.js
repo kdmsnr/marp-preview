@@ -28,6 +28,7 @@ const {
 } = require('../app/clipboardImage');
 
 describe('clipboardImage', () => {
+  const targetWindow = { id: 'target-window' };
   const temporaryDirectories = [];
 
   beforeEach(() => {
@@ -61,8 +62,9 @@ describe('clipboardImage', () => {
       toPNG: () => imageBuffer,
     });
 
-    const result = await pasteClipboardImage();
+    const result = await pasteClipboardImage(targetWindow);
 
+    expect(mockGetCurrentFilePath).toHaveBeenCalledWith(targetWindow);
     expect(result.markdown).toMatch(
       /^!\[image\]\(images\/image-\d{8}-\d{6}\.png\)$/,
     );
@@ -91,8 +93,9 @@ describe('clipboardImage', () => {
   test('requires an open Markdown file', async () => {
     mockGetCurrentFilePath.mockReturnValue(null);
 
-    await expect(pasteClipboardImage()).resolves.toBeNull();
+    await expect(pasteClipboardImage(targetWindow)).resolves.toBeNull();
 
+    expect(mockGetCurrentFilePath).toHaveBeenCalledWith(targetWindow);
     expect(mockReadImage).not.toHaveBeenCalled();
     expect(mockShowErrorBox).toHaveBeenCalledWith(
       'Paste Image Error',
@@ -104,8 +107,9 @@ describe('clipboardImage', () => {
     mockGetCurrentFilePath.mockReturnValue('/tmp/slides.md');
     mockReadImage.mockReturnValue({ isEmpty: () => true });
 
-    await expect(pasteClipboardImage()).resolves.toBeNull();
+    await expect(pasteClipboardImage(targetWindow)).resolves.toBeNull();
 
+    expect(mockGetCurrentFilePath).toHaveBeenCalledWith(targetWindow);
     expect(mockWriteText).not.toHaveBeenCalled();
     expect(mockShowErrorBox).toHaveBeenCalledWith(
       'Paste Image Error',

@@ -1,6 +1,6 @@
 {
   "name": "marp-preview",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A simple desktop app to preview Marp markdown files in real-time.",
   "main": "main.js",
   "scripts": {
@@ -48,7 +48,18 @@
     "appId": "com.kdmsnr.marp-preview",
     "productName": "Marp Preview",
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "fileAssociations": [
+        {
+          "ext": [
+            "md",
+            "markdown"
+          ],
+          "name": "Markdown Document",
+          "role": "Viewer",
+          "rank": "Alternate"
+        }
+      ]
     },
     "win": {
       "target": "nsis"

@@ -2,10 +2,11 @@ const { BrowserWindow, shell } = require('electron');
 const path = require('path');
 const { URL } = require('url');
 const {
-  clearCurrentFilePath,
-  clearMainWindow,
-  getMainWindow,
-  setMainWindow,
+  getWindowSession,
+  getWindowSessions,
+  registerWindow,
+  setWindowReady,
+  unregisterWindow,
 } = require('./state');
 const { stopWatching } = require('./fileWatcher');
 
@@ -42,6 +43,32 @@ function registerExternalLinkHandlers(window) {
   });
 }
 
+function isUsableWindow(window) {
+  return Boolean(window && !window.isDestroyed?.());
+}
+
+function getMainWindows() {
+  return getWindowSessions()
+    .map((session) => session.window)
+    .filter(isUsableWindow);
+}
+
+function getFocusedWindow() {
+  const focusedWindow = BrowserWindow.getFocusedWindow?.();
+  if (isUsableWindow(focusedWindow) && getWindowSession(focusedWindow)) {
+    return focusedWindow;
+  }
+
+  return getMainWindows()[0] || null;
+}
+
+function focusWindow(window) {
+  if (!isUsableWindow(window)) return;
+  if (window.isMinimized?.()) window.restore?.();
+  window.show?.();
+  window.focus?.();
+}
+
 function createMainWindow() {
   const window = new BrowserWindow({
     width: 800,
@@ -53,23 +80,43 @@ function createMainWindow() {
     },
   });
 
-  setMainWindow(window);
+  registerWindow(window);
   registerExternalLinkHandlers(window);
-  window.loadFile(path.join(__dirname, '..', 'index.html'));
+  const ready = Promise.resolve(
+    window.loadFile(path.join(__dirname, '..', 'index.html')),
+  );
+  setWindowReady(window, ready);
+  ready.catch((error) => {
+    console.error('Failed to load the preview window:', error);
+  });
 
   window.on('closed', () => {
-    clearCurrentFilePath();
-    clearMainWindow();
-    stopWatching();
+    stopWatching(window);
+    unregisterWindow(window);
   });
 
   return window;
 }
 
-const ensureMainWindow = () => getMainWindow() || createMainWindow();
+function ensureMainWindow() {
+  const window = getFocusedWindow();
+  if (window) {
+    focusWindow(window);
+    return window;
+  }
+
+  return createMainWindow();
+}
+
+function whenWindowReady(window) {
+  return getWindowSession(window)?.ready || Promise.resolve();
+}
 
 module.exports = {
   createMainWindow,
   ensureMainWindow,
-  getMainWindow,
+  focusWindow,
+  getFocusedWindow,
+  getMainWindows,
+  whenWindowReady,
 };

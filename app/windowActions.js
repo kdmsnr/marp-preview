@@ -1,9 +1,6 @@
-const { getMainWindow } = require('./state');
-
-function setAlwaysOnTop(shouldBeOnTop) {
-  const mainWindow = getMainWindow();
-  if (mainWindow) {
-    mainWindow.setAlwaysOnTop(shouldBeOnTop);
+function setAlwaysOnTop(window, shouldBeOnTop) {
+  if (window && !window.isDestroyed?.()) {
+    window.setAlwaysOnTop(shouldBeOnTop);
   }
 }
 

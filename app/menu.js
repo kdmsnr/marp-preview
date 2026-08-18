@@ -23,8 +23,8 @@ function buildRecentFilesSubmenu(
   const items = recentFiles.map((filePath, index) => ({
     label: `${index + 1}. ${path.basename(filePath)}`,
     sublabel: filePath,
-    click() {
-      openRecentFile(filePath);
+    click(_menuItem, browserWindow) {
+      openRecentFile(filePath, browserWindow);
     },
   }));
 
@@ -41,6 +41,7 @@ function buildRecentFilesSubmenu(
 }
 
 function createApplicationMenu({
+  newWindow = () => {},
   openFile,
   pasteImage = () => {},
   exportPdf,
@@ -56,10 +57,17 @@ function createApplicationMenu({
       label: 'File',
       submenu: [
         {
+          label: 'New Window',
+          accelerator: 'CmdOrCtrl+N',
+          click() {
+            newWindow();
+          },
+        },
+        {
           label: 'Open File',
           accelerator: 'CmdOrCtrl+O',
-          click() {
-            openFile();
+          click(_menuItem, browserWindow) {
+            openFile(browserWindow);
           },
         },
         {
@@ -75,17 +83,21 @@ function createApplicationMenu({
           submenu: [
             {
               label: 'Export as PDF',
-              click() {
-                exportPdf();
+              click(_menuItem, browserWindow) {
+                exportPdf(browserWindow);
               },
             },
             {
               label: 'Export as PPTX',
-              click() {
-                exportPptx();
+              click(_menuItem, browserWindow) {
+                exportPptx(browserWindow);
               },
             },
           ],
+        },
+        { type: 'separator' },
+        {
+          role: 'close',
         },
         {
           role: 'quit',
@@ -98,8 +110,8 @@ function createApplicationMenu({
         {
           label: 'Paste Image and Copy Markdown',
           accelerator: 'CmdOrCtrl+V',
-          click() {
-            pasteImage();
+          click(_menuItem, browserWindow) {
+            pasteImage(browserWindow);
           },
         },
       ],
@@ -112,13 +124,16 @@ function createApplicationMenu({
           type: 'checkbox',
           checked: alwaysOnTop,
           accelerator: 'CmdOrCtrl+T',
-          click(menuItem) {
-            toggleAlwaysOnTop(menuItem.checked);
+          click(menuItem, browserWindow) {
+            toggleAlwaysOnTop(browserWindow, menuItem.checked);
           },
         },
         { role: 'reload' },
         { role: 'toggledevtools' },
       ],
+    },
+    {
+      role: 'windowMenu',
     },
   ];
 

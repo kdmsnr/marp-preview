@@ -35,8 +35,8 @@ async function writeUniqueImage(imagesDirectory, imageBuffer, timestamp) {
   }
 }
 
-async function pasteClipboardImage() {
-  const currentFilePath = getCurrentFilePath();
+async function pasteClipboardImage(window) {
+  const currentFilePath = getCurrentFilePath(window);
   if (!currentFilePath) {
     dialog.showErrorBox(
       'Paste Image Error',

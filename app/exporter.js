@@ -5,11 +5,12 @@ const path = require('path');
 const { dialog } = require('electron');
 const marpCli = require('@marp-team/marp-cli');
 const { loadDeck } = require('./deckLoader');
-const { getCurrentFilePath, getMainWindow } = require('./state');
+const { getCurrentFilePath } = require('./state');
 
 const enginePath = path.join(__dirname, 'marpEngine.js');
+let marpCliQueue = Promise.resolve();
 
-async function runMarpCLI(input, output) {
+async function runMarpCLIJob(input, output) {
   const previousCwd = process.cwd();
   try {
     process.chdir(path.dirname(input));
@@ -27,6 +28,28 @@ async function runMarpCLI(input, output) {
   } finally {
     process.chdir(previousCwd);
   }
+}
+
+function runMarpCLI(input, output) {
+  const job = marpCliQueue.then(() => runMarpCLIJob(input, output));
+  marpCliQueue = job.catch(() => {});
+  return job;
+}
+
+function isUsableWindow(window) {
+  return Boolean(window && !window.isDestroyed?.());
+}
+
+function showSaveDialog(window, options) {
+  return isUsableWindow(window)
+    ? dialog.showSaveDialog(window, options)
+    : dialog.showSaveDialog(options);
+}
+
+function showMessageBox(window, options) {
+  return isUsableWindow(window)
+    ? dialog.showMessageBox(window, options)
+    : dialog.showMessageBox(options);
 }
 
 async function prepareExportInput(input) {
@@ -47,19 +70,26 @@ async function prepareExportInput(input) {
   return { inputPath, temporary: true };
 }
 
-async function exportFile(format) {
-  const currentFilePath = getCurrentFilePath();
+async function exportFile(window, format) {
+  const currentFilePath = getCurrentFilePath(window);
   if (!currentFilePath) {
     dialog.showErrorBox('Export Error', 'No file is currently open to export.');
     return;
   }
 
-  const mainWindow = getMainWindow();
   const defaultFileName = `${path.basename(currentFilePath, path.extname(currentFilePath))}.${format}`;
-  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
-    defaultPath: defaultFileName,
-    filters: [{ name: format.toUpperCase(), extensions: [format] }],
-  });
+  let saveResult;
+  try {
+    saveResult = await showSaveDialog(window, {
+      defaultPath: defaultFileName,
+      filters: [{ name: format.toUpperCase(), extensions: [format] }],
+    });
+  } catch (error) {
+    dialog.showErrorBox('Export Failed', error.message);
+    return;
+  }
+
+  const { canceled, filePath } = saveResult;
   if (canceled || !filePath) return;
 
   let preparedInput;
@@ -67,17 +97,23 @@ async function exportFile(format) {
     preparedInput = await prepareExportInput(currentFilePath);
     await runMarpCLI(preparedInput.inputPath, filePath);
     await fsPromises.access(filePath, fs.constants.R_OK);
-    dialog.showMessageBox(mainWindow, {
-      type: 'info',
-      title: 'Export Successful',
-      message: `File exported to:\n${filePath}`,
-    });
   } catch (e) {
     dialog.showErrorBox('Export Failed', e.message);
+    return;
   } finally {
     if (preparedInput?.temporary) {
       await fsPromises.unlink(preparedInput.inputPath).catch(() => {});
     }
+  }
+
+  try {
+    await showMessageBox(window, {
+      type: 'info',
+      title: 'Export Successful',
+      message: `File exported to:\n${filePath}`,
+    });
+  } catch (error) {
+    console.error('Failed to show the export confirmation:', error);
   }
 }
 

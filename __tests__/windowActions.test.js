@@ -1,12 +1,8 @@
 const mockMainWindow = {
+  isDestroyed: jest.fn(() => false),
   setAlwaysOnTop: jest.fn(),
 };
 
-jest.mock('../app/state', () => ({
-  getMainWindow: jest.fn(() => mockMainWindow),
-}));
-
-const state = require('../app/state');
 const { setAlwaysOnTop } = require('../app/windowActions');
 
 describe('windowActions', () => {
@@ -14,14 +10,22 @@ describe('windowActions', () => {
     jest.clearAllMocks();
   });
 
-  test('sets the always-on-top flag when a window exists', () => {
-    setAlwaysOnTop(true);
+  test('sets the always-on-top flag on the target window', () => {
+    setAlwaysOnTop(mockMainWindow, true);
+    expect(mockMainWindow.isDestroyed).toHaveBeenCalledWith();
     expect(mockMainWindow.setAlwaysOnTop).toHaveBeenCalledWith(true);
   });
 
   test('does nothing when there is no window', () => {
-    state.getMainWindow.mockReturnValue(null);
-    setAlwaysOnTop(false);
+    setAlwaysOnTop(null, false);
+    expect(mockMainWindow.setAlwaysOnTop).not.toHaveBeenCalled();
+  });
+
+  test('does nothing when the target window has been destroyed', () => {
+    mockMainWindow.isDestroyed.mockReturnValue(true);
+
+    setAlwaysOnTop(mockMainWindow, false);
+
     expect(mockMainWindow.setAlwaysOnTop).not.toHaveBeenCalled();
   });
 });

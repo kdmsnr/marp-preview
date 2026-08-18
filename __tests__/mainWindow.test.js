@@ -1,4 +1,6 @@
 const createdWindows = [];
+let mockLoadFileResult;
+let mockNextWindowId = 1;
 
 jest.mock('electron', () => {
   const BrowserWindow = jest.fn((options) => {
@@ -6,6 +8,7 @@ jest.mock('electron', () => {
     const webContentsHandlers = {};
     let windowOpenHandler;
     const window = {
+      id: mockNextWindowId++,
       options,
       webContents: {
         on: jest.fn((event, callback) => {
@@ -17,16 +20,22 @@ jest.mock('electron', () => {
         }),
         triggerWindowOpen: (details) => windowOpenHandler?.(details),
       },
-      loadFile: jest.fn(),
+      focus: jest.fn(),
+      isDestroyed: jest.fn(() => false),
+      isMinimized: jest.fn(() => false),
+      loadFile: jest.fn(() => mockLoadFileResult),
       on: jest.fn((event, callback) => {
         handlers[event] = callback;
       }),
+      restore: jest.fn(),
+      show: jest.fn(),
       emit: (event) => handlers[event]?.(),
     };
     createdWindows.push(window);
     return window;
   });
 
+  BrowserWindow.getFocusedWindow = jest.fn();
   BrowserWindow.__getLastWindow = () =>
     createdWindows[createdWindows.length - 1];
 
@@ -39,31 +48,41 @@ jest.mock('electron', () => {
 });
 
 jest.mock('../app/state', () => ({
-  clearCurrentFilePath: jest.fn(),
-  clearMainWindow: jest.fn(),
-  getMainWindow: jest.fn(),
-  setMainWindow: jest.fn(),
+  getWindowSession: jest.fn(),
+  getWindowSessions: jest.fn(),
+  registerWindow: jest.fn(),
+  setWindowReady: jest.fn(),
+  unregisterWindow: jest.fn(),
 }));
 
-const mockStopWatching = jest.fn();
 jest.mock('../app/fileWatcher', () => ({
-  stopWatching: jest.fn(() => mockStopWatching()),
+  stopWatching: jest.fn(),
 }));
 
 const electron = require('electron');
 const state = require('../app/state');
 const { stopWatching } = require('../app/fileWatcher');
-const { createMainWindow, ensureMainWindow } = require('../app/mainWindow');
+const {
+  createMainWindow,
+  ensureMainWindow,
+  getMainWindows,
+  whenWindowReady,
+} = require('../app/mainWindow');
 
 describe('mainWindow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     createdWindows.length = 0;
-    state.getMainWindow.mockReset();
+    mockNextWindowId = 1;
+    mockLoadFileResult = undefined;
+    electron.BrowserWindow.getFocusedWindow.mockReturnValue(null);
+    state.getWindowSession.mockReturnValue(null);
+    state.getWindowSessions.mockReturnValue([]);
   });
 
-  test('creates the browser window and registers cleanup', () => {
-    state.getMainWindow.mockReturnValue(null);
+  test('creates, registers, and cleans up a browser window', () => {
+    const loadPromise = Promise.resolve();
+    mockLoadFileResult = loadPromise;
 
     const window = createMainWindow();
 
@@ -73,12 +92,33 @@ describe('mainWindow', () => {
         height: 600,
       }),
     );
+    expect(state.registerWindow).toHaveBeenCalledWith(window);
     expect(window.loadFile).toHaveBeenCalled();
-    const lastWindow = electron.BrowserWindow.__getLastWindow();
-    lastWindow.emit('closed');
-    expect(state.clearCurrentFilePath).toHaveBeenCalled();
-    expect(state.clearMainWindow).toHaveBeenCalled();
-    expect(stopWatching).toHaveBeenCalled();
+    expect(state.setWindowReady).toHaveBeenCalledWith(window, loadPromise);
+
+    window.emit('closed');
+
+    expect(stopWatching).toHaveBeenCalledWith(window);
+    expect(state.unregisterWindow).toHaveBeenCalledWith(window);
+  });
+
+  test('returns the readiness promise for the requested window', () => {
+    const window = { id: 1 };
+    const ready = Promise.resolve();
+    state.getWindowSession.mockReturnValue({ window, ready });
+
+    expect(whenWindowReady(window)).toBe(ready);
+  });
+
+  test('lists only usable registered windows', () => {
+    const firstWindow = { isDestroyed: jest.fn(() => false) };
+    const destroyedWindow = { isDestroyed: jest.fn(() => true) };
+    state.getWindowSessions.mockReturnValue([
+      { window: firstWindow },
+      { window: destroyedWindow },
+    ]);
+
+    expect(getMainWindows()).toEqual([firstWindow]);
   });
 
   test('opens external top-level navigations in the default browser', () => {
@@ -127,13 +167,31 @@ describe('mainWindow', () => {
     );
   });
 
-  test('ensureMainWindow reuses the existing instance', () => {
-    const existing = { id: 'cached' };
-    state.getMainWindow.mockReturnValue(existing);
+  test('ensureMainWindow focuses the active registered window', () => {
+    const existing = {
+      id: 10,
+      focus: jest.fn(),
+      isDestroyed: jest.fn(() => false),
+      isMinimized: jest.fn(() => true),
+      restore: jest.fn(),
+      show: jest.fn(),
+    };
+    electron.BrowserWindow.getFocusedWindow.mockReturnValue(existing);
+    state.getWindowSession.mockReturnValue({ window: existing });
 
     const window = ensureMainWindow();
 
     expect(window).toBe(existing);
+    expect(existing.restore).toHaveBeenCalled();
+    expect(existing.show).toHaveBeenCalled();
+    expect(existing.focus).toHaveBeenCalled();
     expect(electron.BrowserWindow).not.toHaveBeenCalled();
+  });
+
+  test('ensureMainWindow creates a window when none are registered', () => {
+    const window = ensureMainWindow();
+
+    expect(window).toBe(electron.BrowserWindow.__getLastWindow());
+    expect(electron.BrowserWindow).toHaveBeenCalledTimes(1);
   });
 });
