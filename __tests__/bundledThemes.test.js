@@ -15,14 +15,10 @@ const packageRoot = path.dirname(
 
 describe('bundled themes', () => {
   test('resolves Science Tokyo assets from the installed package', () => {
-    const css = loadScienceTokyoTheme();
-    const logoPath = path.join(
-      packageRoot,
-      'assets',
-      'science-tokyo-logo.png',
-    );
+    const css = loadScienceTokyoTheme('science-tokyo-a');
+    const logoPath = path.join(packageRoot, 'assets', 'science-tokyo-logo.png');
 
-    expect(css).toContain('/* @theme science-tokyo */');
+    expect(css).toContain('/* @theme science-tokyo-a */');
     expect(css).toContain(pathToFileURL(logoPath).href);
     expect(css).not.toContain('url("./assets/');
     expect(fs.existsSync(logoPath)).toBe(true);

@@ -82,16 +82,20 @@ include先は `deck.md` と同じディレクトリの `.md` または `.markdow
 
 ### Science Tokyoテーマ
 
-front matterで`science-tokyo`を指定すると、内蔵テーマを利用できます。テーマ用のCSSや画像をプレゼンテーションのディレクトリへコピーする必要はありません。
+front matterで`science-tokyo-a`〜`science-tokyo-d`のいずれかを指定すると、内蔵テーマを利用できます。テーマ用のCSSや画像をプレゼンテーションのディレクトリへコピーする必要はありません。
 
 ```yaml
 ---
 marp: true
-theme: science-tokyo
+theme: science-tokyo-a
 size: 16:9
 paginate: true
 ---
 ```
+
+デザインA〜Dには、それぞれ`science-tokyo-a`、`science-tokyo-b`、`science-tokyo-c`、`science-tokyo-d`を指定します。従来の`science-tokyo`は`science-tokyo-a`のエイリアスとして引き続き利用できます。
+
+旧テーマの`title-b`、`content-b`、`section-b1`などのレイアウトクラスを使っている資料では、対応するA〜Dのテーマを選び、クラス名を`title`、`content`、`section-1`、`section-2`へ変更してください。
 
 表紙、中表紙、目次、コンテンツ用のクラスと記述例は、[marp-theme_science-tokyo](https://github.com/kdmsnr/marp-theme_science-tokyo)を参照してください。
 
@@ -220,4 +224,4 @@ Markdownファイルを開いていない場合や、クリップボードに画
 
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
 
-内蔵するScience Tokyoテーマのロゴ、背景画像、デザイン資産には別の利用条件があります。[テーマの利用条件](https://github.com/kdmsnr/marp-theme_science-tokyo/blob/v0.1.0/LICENSE)と[Science Tokyoデザインシステムの利用規約](https://design-system.isct.ac.jp/ja/terms-of-use)を確認してください。
+内蔵するScience Tokyoテーマのロゴ、背景画像、デザイン資産には別の利用条件があります。[テーマの利用条件](https://github.com/kdmsnr/marp-theme_science-tokyo/blob/3c76910a3f9fea9cff18fb206b6ebb13a556fe06/LICENSE)と[Science Tokyoデザインシステムの利用規約](https://design-system.isct.ac.jp/ja/terms-of-use)を確認してください。

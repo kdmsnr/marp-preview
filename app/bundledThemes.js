@@ -4,16 +4,26 @@ const { pathToFileURL } = require('url');
 
 const SCIENCE_TOKYO_PACKAGE = 'marp-theme-science-tokyo';
 const SCIENCE_TOKYO_THEME = 'science-tokyo';
-const SCIENCE_TOKYO_CSS_PATH = require.resolve(
-  `${SCIENCE_TOKYO_PACKAGE}/themes/${SCIENCE_TOKYO_THEME}.css`,
+const SCIENCE_TOKYO_THEME_NAMES = Object.freeze([
+  'science-tokyo-base',
+  'science-tokyo-a',
+  'science-tokyo-b',
+  'science-tokyo-c',
+  'science-tokyo-d',
+  SCIENCE_TOKYO_THEME,
+]);
+const SCIENCE_TOKYO_CSS_PATHS = new Map(
+  SCIENCE_TOKYO_THEME_NAMES.map((themeName) => [
+    themeName,
+    require.resolve(`${SCIENCE_TOKYO_PACKAGE}/themes/${themeName}.css`),
+  ]),
 );
 const SCIENCE_TOKYO_PACKAGE_ROOT = path.dirname(
   require.resolve(`${SCIENCE_TOKYO_PACKAGE}/package.json`),
 );
-const THEME_ASSET_URL_RE =
-  /url\(\s*(["']?)(\.\/assets\/[^"'()]+)\1\s*\)/g;
+const THEME_ASSET_URL_RE = /url\(\s*(["']?)(\.\/assets\/[^"'()]+)\1\s*\)/g;
 
-let scienceTokyoCss;
+const scienceTokyoCss = new Map();
 
 function resolveUnpackedPath(filePath) {
   const asarSegment = `${path.sep}app.asar${path.sep}`;
@@ -45,20 +55,29 @@ function resolveThemeAssetUrls(css, packageRoot) {
   );
 }
 
-function loadScienceTokyoTheme() {
-  if (scienceTokyoCss === undefined) {
-    const css = fs.readFileSync(SCIENCE_TOKYO_CSS_PATH, 'utf-8');
-    scienceTokyoCss = resolveThemeAssetUrls(
-      css,
-      SCIENCE_TOKYO_PACKAGE_ROOT,
+function loadScienceTokyoTheme(themeName = SCIENCE_TOKYO_THEME) {
+  const cssPath = SCIENCE_TOKYO_CSS_PATHS.get(themeName);
+
+  if (!cssPath) {
+    throw new Error(`Unknown bundled Science Tokyo theme: ${themeName}`);
+  }
+
+  if (!scienceTokyoCss.has(themeName)) {
+    const css = fs.readFileSync(cssPath, 'utf-8');
+    scienceTokyoCss.set(
+      themeName,
+      resolveThemeAssetUrls(css, SCIENCE_TOKYO_PACKAGE_ROOT),
     );
   }
 
-  return scienceTokyoCss;
+  return scienceTokyoCss.get(themeName);
 }
 
 function installBundledThemes(marp) {
-  marp.themeSet.add(loadScienceTokyoTheme());
+  for (const themeName of SCIENCE_TOKYO_THEME_NAMES) {
+    marp.themeSet.add(loadScienceTokyoTheme(themeName));
+  }
+
   return marp;
 }
 
