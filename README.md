@@ -20,7 +20,7 @@
 
 ### 必要なもの
 
-- [Node.js](https://nodejs.org/) (v18以上を推奨)
+- [Node.js](https://nodejs.org/) (v20以上を推奨)
 
 ### 1. インストール
 
@@ -224,4 +224,4 @@ Markdownファイルを開いていない場合や、クリップボードに画
 
 このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
 
-内蔵するScience Tokyoテーマのロゴ、背景画像、デザイン資産には別の利用条件があります。[テーマの利用条件](https://github.com/kdmsnr/marp-theme_science-tokyo/blob/3c76910a3f9fea9cff18fb206b6ebb13a556fe06/LICENSE)と[Science Tokyoデザインシステムの利用規約](https://design-system.isct.ac.jp/ja/terms-of-use)を確認してください。
+内蔵するScience Tokyoテーマのロゴ、背景画像、デザイン資産には別の利用条件があります。[テーマの利用条件](https://github.com/kdmsnr/marp-theme_science-tokyo/blob/baccb3a1dd486526d5b3ae5c2c6065113874b960/LICENSE)と[Science Tokyoデザインシステムの利用規約](https://design-system.isct.ac.jp/ja/terms-of-use)を確認してください。

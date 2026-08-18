@@ -116,9 +116,12 @@ function parseCitationMetadata(markdown) {
   if (!htmlCommentDirectives) return {};
 
   try {
-    const metadata = yaml.load(
-      extractCitationMetadataYaml(htmlCommentDirectives[1]),
-    ) || {};
+    const citationMetadataYaml = extractCitationMetadataYaml(
+      htmlCommentDirectives[1],
+    );
+    if (!citationMetadataYaml.trim()) return {};
+
+    const metadata = yaml.load(citationMetadataYaml) || {};
     if (
       metadata &&
       typeof metadata === 'object' &&

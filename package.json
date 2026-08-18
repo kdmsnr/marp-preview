@@ -1,6 +1,6 @@
 {
   "name": "marp-preview",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A simple desktop app to preview Marp markdown files in real-time.",
   "main": "main.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "chokidar": "^5.0.0",
     "js-yaml": "^5.2.1",
     "markdown-it-footnote": "^4.0.0",
-    "marp-theme-science-tokyo": "https://github.com/kdmsnr/marp-theme_science-tokyo/archive/3c76910a3f9fea9cff18fb206b6ebb13a556fe06.tar.gz"
+    "marp-theme-science-tokyo": "https://github.com/kdmsnr/marp-theme_science-tokyo/archive/baccb3a1dd486526d5b3ae5c2c6065113874b960.tar.gz"
   },
   "devDependencies": {
     "electron": "^41.3.0",

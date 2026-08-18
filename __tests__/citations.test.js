@@ -195,6 +195,22 @@ describe('citations', () => {
     expect(processCitations(markdown)).toBe(markdown);
   });
 
+  test.each([
+    [
+      'YAML front matter',
+      ['---', 'marp: true', 'theme: default', '---', '', '@kdmsnr'].join('\n'),
+    ],
+    [
+      'Marp HTML comment directives',
+      ['<!--', 'marp: true', 'theme: default', '-->', '', '@kdmsnr'].join('\n'),
+    ],
+  ])(
+    'leaves author-like handles unchanged with non-citation %s',
+    (_name, markdown) => {
+      expect(processCitations(markdown)).toBe(markdown);
+    },
+  );
+
   test('still rejects an unknown explicit citation', () => {
     fixture = createCitationFixture();
     const markdown = [
