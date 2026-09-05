@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { clipboard, dialog } = require('electron');
-const { getCurrentFilePath } = require('./state');
+const { clipboard, dialog, nativeImage } = require('electron');
+const { getCurrentFilePath, getSlideSize } = require('./state');
 
 const fsPromises = fs.promises;
 const IMAGES_DIRECTORY = 'images';
@@ -35,6 +35,24 @@ async function writeUniqueImage(imagesDirectory, imageBuffer, timestamp) {
   }
 }
 
+function imageToSlideSizedPNG(image, slideSize) {
+  const png = image.toPNG();
+  // Normalize Retina representations to 1x, so both resize() and getSize()
+  // operate on the pixels that will actually be written to disk.
+  const source = nativeImage.createFromBuffer(png);
+  const { width, height } = source.getSize();
+  const scale = Math.min(slideSize.width / width, slideSize.height / height, 1);
+  if (scale === 1) return png;
+
+  return source
+    .resize({
+      width: Math.max(1, Math.floor(width * scale)),
+      height: Math.max(1, Math.floor(height * scale)),
+      quality: 'best',
+    })
+    .toPNG();
+}
+
 async function pasteClipboardImage(window) {
   const currentFilePath = getCurrentFilePath(window);
   if (!currentFilePath) {
@@ -55,6 +73,7 @@ async function pasteClipboardImage(window) {
   }
 
   try {
+    const imageBuffer = imageToSlideSizedPNG(image, getSlideSize(window));
     const imagesDirectory = path.join(
       path.dirname(currentFilePath),
       IMAGES_DIRECTORY,
@@ -63,7 +82,7 @@ async function pasteClipboardImage(window) {
 
     const savedImage = await writeUniqueImage(
       imagesDirectory,
-      image.toPNG(),
+      imageBuffer,
       formatTimestamp(),
     );
     const markdown = `![image](${path.posix.join(
@@ -82,6 +101,7 @@ async function pasteClipboardImage(window) {
 
 module.exports = {
   formatTimestamp,
+  imageToSlideSizedPNG,
   pasteClipboardImage,
   writeUniqueImage,
 };

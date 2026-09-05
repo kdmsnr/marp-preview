@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const sessions = new Map();
+const DEFAULT_SLIDE_SIZE = Object.freeze({ width: 1280, height: 720 });
 
 function getWindowId(window) {
   return window?.id;
@@ -36,6 +37,7 @@ function registerWindow(window) {
     window,
     ready: Promise.resolve(),
     currentFilePath: null,
+    slideSize: null,
     fileIdentity: null,
     watcher: null,
     debounceTimer: null,
@@ -76,12 +78,30 @@ function getCurrentFilePath(window) {
   return getWindowSession(window)?.currentFilePath || null;
 }
 
+function getSlideSize(window) {
+  return getWindowSession(window)?.slideSize || DEFAULT_SLIDE_SIZE;
+}
+
+function setSlideSize(window, size) {
+  const session = getWindowSession(window);
+  if (!session) return;
+  session.slideSize =
+    size &&
+    Number.isFinite(size.width) &&
+    Number.isFinite(size.height) &&
+    size.width >= 1 &&
+    size.height >= 1
+      ? { width: Math.floor(size.width), height: Math.floor(size.height) }
+      : null;
+}
+
 function reserveFile(window, filePath) {
   const session = getWindowSession(window);
   if (!session || !filePath) return null;
 
   const resolvedPath = resolveFilePath(filePath);
   session.currentFilePath = resolvedPath;
+  session.slideSize = null;
   session.fileIdentity = getFileIdentity(resolvedPath);
   session.renderRevision += 1;
 
@@ -121,6 +141,7 @@ function clearCurrentFilePath(window) {
   if (!session) return;
 
   session.currentFilePath = null;
+  session.slideSize = null;
   session.fileIdentity = null;
   session.renderRevision += 1;
 }
@@ -141,6 +162,7 @@ module.exports = {
   findWindowSessionByFilePath,
   getCurrentFilePath,
   getFileIdentity,
+  getSlideSize,
   getWindowSession,
   getWindowSessions,
   isCurrentRender,
@@ -148,5 +170,6 @@ module.exports = {
   reserveFile,
   resolveFilePath,
   setWindowReady,
+  setSlideSize,
   unregisterWindow,
 };

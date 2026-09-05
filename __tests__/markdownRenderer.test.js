@@ -1,6 +1,7 @@
 const mockShowErrorBox = jest.fn();
 const mockRender = jest.fn();
 const mockLoadDeck = jest.fn();
+const mockGetRenderedSlideSize = jest.fn();
 const mockCreateMarp = jest.fn(() => ({
   render: mockRender,
 }));
@@ -17,10 +18,12 @@ jest.mock('../app/deckLoader', () => ({
 
 jest.mock('../app/marp', () => ({
   createMarp: mockCreateMarp,
+  getRenderedSlideSize: mockGetRenderedSlideSize,
 }));
 
 jest.mock('../app/state', () => ({
   isCurrentRender: jest.fn(),
+  setSlideSize: jest.fn(),
 }));
 
 const state = require('../app/state');
@@ -49,9 +52,15 @@ describe('markdownRenderer', () => {
     mockRender.mockReset();
     state.isCurrentRender.mockReset();
     state.isCurrentRender.mockReturnValue(true);
+    state.setSlideSize.mockReset();
+    mockGetRenderedSlideSize.mockReset();
+    mockGetRenderedSlideSize.mockReturnValue({ width: 1280, height: 720 });
   });
 
   test('renders each deck only into its explicitly supplied window', async () => {
+    mockGetRenderedSlideSize
+      .mockReturnValueOnce({ width: 960, height: 720 })
+      .mockReturnValueOnce({ width: 1280, height: 720 });
     mockLoadDeck.mockImplementation(async (filePath) => ({
       markdown: filePath === '/tmp/first.md' ? '# First' : '# Second',
       dependencies: [filePath],
@@ -97,6 +106,14 @@ describe('markdownRenderer', () => {
     expect(firstDependencies).toEqual(['/tmp/first.md']);
     expect(secondDependencies).toEqual(['/tmp/second.md']);
     expect(dialog.showErrorBox).not.toHaveBeenCalled();
+    expect(state.setSlideSize).toHaveBeenNthCalledWith(1, firstWindow, {
+      width: 960,
+      height: 720,
+    });
+    expect(state.setSlideSize).toHaveBeenNthCalledWith(2, secondWindow, {
+      width: 1280,
+      height: 720,
+    });
   });
 
   test('lets a newer render revision win when an older render finishes last', async () => {
@@ -144,6 +161,7 @@ describe('markdownRenderer', () => {
       css: '',
     });
     expect(firstWindow.setTitle).toHaveBeenCalledTimes(1);
+    expect(state.setSlideSize).toHaveBeenCalledTimes(1);
   });
 
   test('shows an error only when the failed render revision is current', async () => {
@@ -194,6 +212,7 @@ describe('markdownRenderer', () => {
     );
     expect(firstWindow.webContents.send).not.toHaveBeenCalled();
     expect(firstWindow.setTitle).not.toHaveBeenCalled();
+    expect(state.setSlideSize).not.toHaveBeenCalled();
   });
 
   test('passes file-relative plugin paths to the shared Marp renderer', async () => {

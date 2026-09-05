@@ -3,8 +3,8 @@ const { dialog } = require('electron');
 const { CITATION_BASE_PATH } = require('./citations');
 const { loadDeck } = require('./deckLoader');
 const { LOCAL_IMAGE_BASE_PATH } = require('./localImagePaths');
-const { createMarp } = require('./marp');
-const { isCurrentRender } = require('./state');
+const { createMarp, getRenderedSlideSize } = require('./marp');
+const { isCurrentRender, setSlideSize } = require('./state');
 
 const marp = createMarp();
 
@@ -23,6 +23,7 @@ async function renderAndSend(window, filePath, revision) {
       isCurrentRender(window, filePath, revision) &&
       !window.isDestroyed?.()
     ) {
+      setSlideSize(window, getRenderedSlideSize(marp));
       window.webContents.send('marp-rendered', { html, css });
       window.setTitle(path.basename(filePath));
       window.setRepresentedFilename?.(filePath);

@@ -88,6 +88,13 @@ describe('menu', () => {
     exportMenu[1].click({}, browserWindow);
     expect(exportPdf).toHaveBeenCalledWith(browserWindow);
     expect(exportPptx).toHaveBeenCalledWith(browserWindow);
+    const originalPdfItem = exportMenu.find(
+      (item) => item.label === 'Export as PDF (Original Quality)',
+    );
+    originalPdfItem.click({}, browserWindow);
+    expect(exportPdf).toHaveBeenCalledWith(browserWindow, {
+      optimizePdf: false,
+    });
 
     const pasteImageItem = template[1].submenu[0];
     expect(pasteImageItem.accelerator).toBe('CmdOrCtrl+V');

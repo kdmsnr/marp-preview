@@ -51,6 +51,35 @@ describe('state module', () => {
     );
   });
 
+  test('tracks slide sizes per window and resets them when the deck changes', () => {
+    const first = { id: 1 };
+    const second = { id: 2 };
+    state.registerWindow(first);
+    state.registerWindow(second);
+    state.reserveFile(first, '/tmp/first.md');
+    state.reserveFile(second, '/tmp/second.md');
+    state.setSlideSize(first, { width: 960, height: 720 });
+    state.setSlideSize(second, { width: 800.5, height: 1200.5 });
+
+    expect(state.getSlideSize(first)).toEqual({ width: 960, height: 720 });
+    expect(state.getSlideSize(second)).toEqual({ width: 800, height: 1200 });
+    state.reserveFile(first, '/tmp/new.md');
+    expect(state.getSlideSize(first)).toEqual({ width: 1280, height: 720 });
+    expect(state.getSlideSize(second)).toEqual({ width: 800, height: 1200 });
+    state.clearCurrentFilePath(second);
+    expect(state.getSlideSize(second)).toEqual({ width: 1280, height: 720 });
+  });
+
+  test.each([null, { width: 0, height: 720 }, { width: 1280, height: NaN }])(
+    'falls back to the standard size when viewport dimensions are invalid: %j',
+    (size) => {
+      const window = { id: 1 };
+      state.registerWindow(window);
+      state.setSlideSize(window, size);
+      expect(state.getSlideSize(window)).toEqual({ width: 1280, height: 720 });
+    },
+  );
+
   test('unregisters only the closed window and invalidates its render', () => {
     const firstWindow = { id: 1 };
     const secondWindow = { id: 2 };

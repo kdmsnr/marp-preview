@@ -1,5 +1,5 @@
 const { FOOTNOTE_CSS } = require('../app/footnotes');
-const { createMarp } = require('../app/marp');
+const { createMarp, getRenderedSlideSize } = require('../app/marp');
 const marpPreviewEngine = require('../app/marpEngine');
 const { PAGINATION_CSS } = require('../app/pagination');
 
@@ -8,6 +8,25 @@ describe('createMarp', () => {
     const marp = createMarp();
 
     expect(marp.options.inlineSVG).toBe(true);
+  });
+
+  test('reads each rendered viewport, including aspect ratio directives and custom themes', () => {
+    const marp = createMarp();
+    marp.themeSet.add(
+      '/* @theme portrait */ section { width: 800px; height: 1200px; }',
+    );
+    expect(getRenderedSlideSize(marp)).toBeNull();
+
+    for (const [markdown, size] of [
+      ['# Default', { width: 1280, height: 720 }],
+      ['---\nsize: 4:3\n---\n# Four three', { width: 960, height: 720 }],
+      ['---\ntheme: portrait\n---\n# Portrait', { width: 800, height: 1200 }],
+      ['# Back to default', { width: 1280, height: 720 }],
+    ]) {
+      const { html } = marp.render(markdown);
+      expect(getRenderedSlideSize(marp)).toEqual(size);
+      expect(html).toContain(`viewBox="0 0 ${size.width} ${size.height}"`);
+    }
   });
 
   test('renders footnotes on the slide where they are referenced', () => {
@@ -176,7 +195,9 @@ describe('createMarp', () => {
     const { html } = marp.render('test[^id]\n\n[^id]: note');
 
     expect(html).toContain('test<sup class="footnote-ref"');
-    expect(html).toContain('<div class="footnotes">\n<hr class="footnotes-sep" />');
+    expect(html).toContain(
+      '<div class="footnotes">\n<hr class="footnotes-sep" />',
+    );
     expect(html).not.toContain('<section class="footnotes">');
     expect(html).toContain('note ');
   });
