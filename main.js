@@ -48,8 +48,7 @@ app.whenReady().then(() => {
       newWindow: createMainWindow,
       openFile: (window) => openFile(window || getFocusedWindow()),
       pasteImage: (window) => pasteClipboardImage(window || getFocusedWindow()),
-      exportPdf: (window, options) =>
-        exportFile(window || getFocusedWindow(), 'pdf', options),
+      exportPdf: (window) => exportFile(window || getFocusedWindow(), 'pdf'),
       exportPptx: (window) => exportFile(window || getFocusedWindow(), 'pptx'),
       toggleAlwaysOnTop: setAlwaysOnTop,
       alwaysOnTop: Boolean(getFocusedWindow()?.isAlwaysOnTop?.()),

@@ -93,12 +93,6 @@ function createApplicationMenu({
                 exportPptx(browserWindow);
               },
             },
-            {
-              label: 'Export as PDF (Original Quality)',
-              click(_menuItem, browserWindow) {
-                exportPdf(browserWindow, { optimizePdf: false });
-              },
-            },
           ],
         },
         { type: 'separator' },

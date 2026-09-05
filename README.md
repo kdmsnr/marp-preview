@@ -46,15 +46,9 @@ npm start
 
 空のウィンドウを追加するには、`File > New Window` または `CmdOrCtrl+N` を使います。macOSのビルド版では、Finderの「このアプリケーションで開く」からMarkdownファイルを選ぶこともできます。
 
-### PDFのファイルサイズを小さくする
+### PDFのエクスポート
 
-`File > Export > Export as PDF` は、[Ghostscript](https://ghostscript.com/releases/) がインストールされている場合、出力後にPDFを自動で最適化します。画像の解像度を落とさず、新たなJPEG圧縮も行わずに、可逆圧縮・画像の重複除去・フォントの圧縮を適用します。文字とベクター図は保持し、元のMarkdownや画像ファイルは変更しません。完了ダイアログに最適化前後のサイズと削減率が表示されます。すでに効率よく圧縮されているPDFでは、サイズがほとんど変わらない場合もあります。
-
-macOSでは `brew install ghostscript` でインストールできます。Finderから起動したアプリでもHomebrewの標準インストール先を検出します。WindowsではGhostscriptの `bin` ディレクトリを `PATH` に追加してください。独自の場所にインストールした場合は、環境変数 `MARP_PREVIEW_GHOSTSCRIPT` に実行ファイルのフルパスを指定できます。
-
-Ghostscriptがない場合、最適化に失敗した場合、またはサイズが小さくならない場合は、元のPDFを保存します。最適化を行わずに出力したい場合は `Export as PDF (Original Quality)` を選択してください。PPTXの出力には影響しません。
-
-最適化はPDFを書き直すため、ビューアによってはコピー・検索時の文字の区切りや読み取り順が変わることがあります。元の文字構造を保持したい場合も `Export as PDF (Original Quality)` を使ってください。
+`File > Export > Export as PDF` は、Marpが生成したPDFをそのまま保存します。図や色情報の欠落を避けるため、自動での再圧縮やGhostscriptによる後処理は行いません。必要な場合は、出力後にAcrobatなどで最適化してください。
 
 ### プレゼンテーションを複数ファイルに分割する
 

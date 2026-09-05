@@ -15,11 +15,6 @@ jest.mock('@marp-team/marp-cli', () => ({
   marpCli: mockMarpCli,
 }));
 
-const mockOptimizePdf = jest.fn();
-jest.mock('../app/pdfOptimizer', () => ({
-  optimizePdf: mockOptimizePdf,
-}));
-
 const mockAccess = jest.fn();
 const mockWriteFile = jest.fn();
 const mockUnlink = jest.fn();
@@ -64,7 +59,6 @@ describe('exporter', () => {
     mockWriteFile.mockResolvedValue();
     mockUnlink.mockResolvedValue();
     mockShowMessageBox.mockResolvedValue();
-    mockOptimizePdf.mockResolvedValue({ status: 'unchanged' });
   });
 
   test('shows an error when no file is open', async () => {
@@ -116,7 +110,6 @@ describe('exporter', () => {
       '/tmp/output.pdf',
       expect.any(Number),
     );
-    expect(mockOptimizePdf).toHaveBeenCalledWith('/tmp/output.pdf');
     expect(mockShowMessageBox).toHaveBeenCalledWith(
       targetWindow,
       expect.objectContaining({
@@ -125,65 +118,6 @@ describe('exporter', () => {
       }),
     );
   });
-
-  test('reports the size reduction after PDF optimization', async () => {
-    state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
-    mockShowSaveDialog.mockResolvedValue({ filePath: '/tmp/output.pdf' });
-    mockMarpCli.mockResolvedValue(0);
-    mockOptimizePdf.mockResolvedValue({
-      status: 'optimized',
-      originalBytes: 4 * 1024 * 1024,
-      finalBytes: 1024 * 1024,
-    });
-
-    await exportFile(targetWindow, 'pdf');
-
-    expect(mockShowMessageBox).toHaveBeenCalledWith(
-      targetWindow,
-      expect.objectContaining({
-        detail: 'PDF optimized: 4.0 MiB → 1.0 MiB (75% smaller).',
-      }),
-    );
-  });
-
-  test.each([
-    ['pdf', { optimizePdf: false }],
-    ['pptx', undefined],
-  ])('skips optimization for %s with options %j', async (format, options) => {
-    state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
-    mockShowSaveDialog.mockResolvedValue({ filePath: `/tmp/output.${format}` });
-    mockMarpCli.mockResolvedValue(0);
-
-    await exportFile(targetWindow, format, options);
-
-    expect(mockOptimizePdf).not.toHaveBeenCalled();
-    expect(mockShowMessageBox).toHaveBeenCalled();
-  });
-
-  test.each(['unavailable', 'failed'])(
-    'still reports a successful export when optimization is %s',
-    async (status) => {
-      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
-      mockShowSaveDialog.mockResolvedValue({ filePath: '/tmp/output.pdf' });
-      mockMarpCli.mockResolvedValue(0);
-      mockOptimizePdf.mockResolvedValue({
-        status,
-        error: new Error('failure'),
-      });
-
-      await exportFile(targetWindow, 'pdf');
-
-      expect(mockShowErrorBox).not.toHaveBeenCalled();
-      expect(mockShowMessageBox).toHaveBeenCalledWith(
-        targetWindow,
-        expect.objectContaining({
-          detail: expect.stringContaining('PDF saved at original quality'),
-        }),
-      );
-      warn.mockRestore();
-    },
-  );
 
   test('exports expanded Markdown and removes the temporary input', async () => {
     state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
@@ -235,7 +169,6 @@ describe('exporter', () => {
       'Export Failed',
       expect.stringContaining('code 1'),
     );
-    expect(mockOptimizePdf).not.toHaveBeenCalled();
   });
 
   test('uses an unparented confirmation if the window closes during export', async () => {
@@ -336,31 +269,5 @@ describe('exporter', () => {
       secondWindow,
       expect.any(Object),
     );
-  });
-
-  test('waits for optimization before starting another export', async () => {
-    const originalCwd = process.cwd();
-    let finishOptimization;
-    state.getCurrentFilePath.mockReturnValue('/tmp/deck.md');
-    mockShowSaveDialog.mockResolvedValue({ filePath: '/tmp/output.pdf' });
-    mockMarpCli.mockResolvedValue(0);
-    mockOptimizePdf.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finishOptimization = resolve;
-        }),
-    );
-
-    const first = exportFile(targetWindow, 'pdf');
-    const second = exportFile(targetWindow, 'pdf');
-    await new Promise((resolve) => setImmediate(resolve));
-    expect(mockMarpCli).toHaveBeenCalledTimes(1);
-    expect(mockShowMessageBox).not.toHaveBeenCalled();
-    expect(process.cwd()).toBe(originalCwd);
-
-    finishOptimization({ status: 'unchanged' });
-    await Promise.all([first, second]);
-    expect(mockMarpCli).toHaveBeenCalledTimes(2);
-    expect(mockOptimizePdf).toHaveBeenCalledTimes(2);
   });
 });
