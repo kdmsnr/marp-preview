@@ -3,6 +3,7 @@ const { installAdmonitions } = require('./admonitions');
 const { installBundledThemes } = require('./bundledThemes');
 const { installCitations } = require('./citations');
 const { installFootnotes } = require('./footnotes');
+const { installFragments } = require('./fragments');
 const { installLocalImagePaths } = require('./localImagePaths');
 const { installPagination } = require('./pagination');
 
@@ -13,6 +14,7 @@ function marpPreviewEngine(options = {}) {
   installAdmonitions(marp);
   installFootnotes(marp);
   installLocalImagePaths(marp);
+  installFragments(marp);
   return installPagination(marp);
 }
 
