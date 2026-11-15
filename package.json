@@ -34,7 +34,7 @@
     "chokidar": "^5.0.0",
     "js-yaml": "^5.2.1",
     "markdown-it-footnote": "^4.0.0",
-    "marp-theme-science-tokyo": "https://github.com/kdmsnr/marp-theme_science-tokyo/archive/baccb3a1dd486526d5b3ae5c2c6065113874b960.tar.gz"
+    "marp-theme-science-tokyo": "https://github.com/kdmsnr/marp-theme_science-tokyo/archive/7b66159b67a32cde1d6b480cd6edef081092e71d.tar.gz"
   },
   "devDependencies": {
     "electron": "^41.3.0",

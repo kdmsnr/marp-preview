@@ -1,0 +1,74 @@
+name: Update Science Tokyo theme
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-science-tokyo-theme
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check theme version
+        id: theme
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(gh api repos/kdmsnr/marp-theme_science-tokyo/commits/main --jq .sha)
+          if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid theme commit SHA" >&2
+            exit 1
+          fi
+          url="https://github.com/kdmsnr/marp-theme_science-tokyo/archive/${sha}.tar.gz"
+          current=$(node -p "require('./package.json').dependencies['marp-theme-science-tokyo']")
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          if [[ "$current" != "$url" ]]; then
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Node.js
+        if: steps.theme.outputs.changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Update theme and test
+        if: steps.theme.outputs.changed == 'true'
+        env:
+          THEME_URL: ${{ steps.theme.outputs.url }}
+        run: |
+          npm ci
+          npm install "marp-theme-science-tokyo@${THEME_URL}"
+          npm test -- --runInBand --coverage=false
+
+      - name: Create or update pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: automation/update-science-tokyo-theme
+          base: main
+          delete-branch: true
+          add-paths: |
+            package.json
+            package-lock.json
+          commit-message: 'Update Science Tokyo theme'
+          title: 'Update Science Tokyo theme'
+          body: |
+            Update the bundled Science Tokyo theme to commit ${{ steps.theme.outputs.sha }}.
+
+            The test suite passed after updating the dependency.
