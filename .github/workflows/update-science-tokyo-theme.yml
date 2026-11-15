@@ -58,6 +58,7 @@ jobs:
           npm test -- --runInBand --coverage=false
 
       - name: Create or update pull request
+        id: pull-request
         uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/update-science-tokyo-theme
@@ -72,3 +73,11 @@ jobs:
             Update the bundled Science Tokyo theme to commit ${{ steps.theme.outputs.sha }}.
 
             The test suite passed after updating the dependency.
+
+      - name: Merge tested theme update
+        if: steps.theme.outputs.changed == 'true' && steps.pull-request.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pull-request.outputs.pull-request-number }}
+          PR_HEAD_SHA: ${{ steps.pull-request.outputs.pull-request-head-sha }}
+        run: gh pr merge "$PR_NUMBER" --squash --auto --match-head-commit "$PR_HEAD_SHA"
